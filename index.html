@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>For Albandari ♡</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, serif;
+            background: #160b10;
+            color: #fff7f9;
+            text-align: center;
+        }
+
+
+        /* OPENING PAGE */
+
+        .home {
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #160b10,
+                    #351923,
+                    #160b10
+                );
+        }
+
+
+        .home-content {
+            padding: 30px;
+            animation: fadeIn 2s ease;
+        }
+
+
+        h1 {
+            font-size: 45px;
+            margin-bottom: 15px;
+        }
+
+
+        .subtitle {
+            color: #e8cfd7;
+            font-size: 18px;
+            margin-bottom: 35px;
+        }
+
+
+        button {
+            background: transparent;
+
+            color: white;
+
+            border: 1px solid #d9a6b6;
+
+            padding: 13px 35px;
+
+            border-radius: 30px;
+
+            font-size: 17px;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+
+        button:hover {
+            background: white;
+
+            color: #351923;
+
+            transform: scale(1.07);
+        }
+
+
+
+        /* OUR STORY */
+
+        .story {
+            min-height: 100vh;
+
+            padding: 100px 20px;
+
+            background:
+                linear-gradient(
+                    #160b10,
+                    #271119
+                );
+        }
+
+
+        .story-title {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+
+        .story-intro {
+            color: #dcbac5;
+            margin-bottom: 80px;
+        }
+
+
+
+        /* MOMENTS */
+
+        .moment {
+            max-width: 600px;
+
+            margin: 80px auto;
+
+            padding: 35px;
+
+            border: 1px solid #6d3b4b;
+
+            border-radius: 20px;
+
+            background:
+                rgba(255, 255, 255, 0.03);
+        }
+
+
+        .date {
+            color: #e5aabd;
+
+            font-size: 17px;
+
+            letter-spacing: 3px;
+        }
+
+
+        .moment h2 {
+            font-size: 28px;
+        }
+
+
+        .moment p {
+            color: #e8cfd7;
+
+            line-height: 1.8;
+        }
+
+
+
+        /* COUNTER */
+
+        .counter-section {
+            padding: 100px 20px;
+
+            min-height: 70vh;
+
+            background: #10070b;
+        }
+
+
+        #counter {
+            margin-top: 35px;
+
+            font-size: 25px;
+
+            line-height: 2;
+
+            color: #f0becd;
+        }
+
+
+        .small {
+            color: #aa7b89;
+
+            font-size: 14px;
+        }
+
+
+
+        /* MUSIC BUTTON */
+
+        .music-button {
+            position: fixed;
+
+            bottom: 20px;
+            right: 20px;
+
+            width: 50px;
+            height: 50px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background: #351923;
+
+            z-index: 100;
+        }
+
+
+
+        /* ANIMATION */
+
+        @keyframes fadeIn {
+
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+        }
+
+
+
+        /* MOBILE */
+
+        @media (max-width: 600px) {
+
+            h1 {
+                font-size: 34px;
+            }
+
+            .story-title {
+                font-size: 34px;
+            }
+
+            #counter {
+                font-size: 20px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- AUDIO -->
+
+<audio id="ourSong" loop>
+
+    <source
+        src="oursong.mp3"
+        type="audio/mpeg">
+
+</audio>
+
+
+
+<!-- OPENING PAGE -->
+
+<section class="home">
+
+    <div class="home-content">
+
+        <h1>
+            For Albandari, with love ♡
+        </h1>
+
+
+        <p class="subtitle">
+
+            Just because you mean more
+            to me than you know.
+
+        </p>
+
+
+        <button onclick="openStory()">
+
+            Open ♡
+
+        </button>
+
+    </div>
+
+</section>
+
+
+
+<!-- OUR STORY -->
+
+<section
+    class="story"
+    id="story">
+
+
+    <h1 class="story-title">
+
+        Our Story ♡
+
+    </h1>
+
+
+    <p class="story-intro">
+
+        Albandari, somehow,
+        out of all the people in the world,
+        I found you.
+
+    </p>
+
+
+
+    <!-- FIRST DATE -->
+
+    <div class="moment">
+
+
+        <div class="date">
+
+            01 • 12 • 2023
+
+        </div>
+
+
+        <h2>
+
+            The day we met. ♡
+
+        </h2>
+
+
+        <p>
+
+            The day you walked into my life.
+            I had no idea you'd become
+            this important to me.
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- SECOND DATE -->
+
+    <div class="moment">
+
+
+        <div class="date">
+
+            27 • 01 • 2024
+
+        </div>
+
+
+        <h2>
+
+            The day the feeling became mutual. ♡
+
+        </h2>
+
+
+        <p>
+
+            The day I found out your heart
+            felt the same way mine did.
+
+        </p>
+
+
+    </div>
+
+
+</section>
+
+
+
+<!-- LIVE COUNTER -->
+
+<section class="counter-section">
+
+
+    <h1>
+
+        Since We Became Us ♡
+
+    </h1>
+
+
+    <p class="small">
+
+        Since January 27, 2024
+
+    </p>
+
+
+    <div id="counter"></div>
+
+
+</section>
+
+
+
+<!-- MUSIC CONTROL -->
+
+<button
+    class="music-button"
+    onclick="toggleMusic()">
+
+    ♫
+
+</button>
+
+
+
+<script>
+
+
+    /* OPEN STORY + PLAY SONG */
+
+    function openStory() {
+
+        const song =
+            document.getElementById("ourSong");
+
+
+        song.play();
+
+
+        document
+            .getElementById("story")
+            .scrollIntoView({
+
+                behavior: "smooth"
+
+            });
+
+    }
+
+
+
+    /* PLAY / PAUSE MUSIC */
+
+    function toggleMusic() {
+
+        const song =
+            document.getElementById("ourSong");
+
+
+        if (song.paused) {
+
+            song.play();
+
+        }
+
+        else {
+
+            song.pause();
+
+        }
+
+    }
+
+
+
+    /* LIVE COUNTER */
+
+    function updateCounter() {
+
+
+        const startDate =
+            new Date("2024-01-27T00:00:00");
+
+
+        const now =
+            new Date();
+
+
+        let difference =
+            now - startDate;
+
+
+
+        const days =
+            Math.floor(
+                difference /
+                (1000 * 60 * 60 * 24)
+            );
+
+
+        difference %=
+            (1000 * 60 * 60 * 24);
+
+
+
+        const hours =
+            Math.floor(
+                difference /
+                (1000 * 60 * 60)
+            );
+
+
+        difference %=
+            (1000 * 60 * 60);
+
+
+
+        const minutes =
+            Math.floor(
+                difference /
+                (1000 * 60)
+            );
+
+
+        difference %=
+            (1000 * 60);
+
+
+
+        const seconds =
+            Math.floor(
+                difference / 1000
+            );
+
+
+
+        document
+            .getElementById("counter")
+            .innerHTML =
+
+            days + " days ♡<br>" +
+
+            hours + " hours • " +
+
+            minutes + " minutes • " +
+
+            seconds + " seconds";
+
+    }
+
+
+
+    updateCounter();
+
+
+    setInterval(
+        updateCounter,
+        1000
+    );
+
+
+</script>
+
+
+</body>
+
+</html>
