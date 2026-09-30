@@ -342,14 +342,14 @@
         }
 
         .saved-box {
-            margin-top: 20px;
-            padding: 20px;
+            margin-top: 15px;
+            padding: 15px;
             border: 1px dashed #d9a6b6;
             border-radius: 15px;
             background: rgba(217, 166, 182, 0.05);
             color: #f0becd;
             font-style: italic;
-            font-size: 18px;
+            font-size: 17px;
             line-height: 1.8;
             word-break: break-word;
             text-align: left;
@@ -524,17 +524,11 @@
                 
                 <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
 
-                <!-- SECURE MESSAGES BOX -->
+                <!-- PROTECTED MESSAGES BOX (WITHOUT PASSWORD NOW) -->
                 <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
-                <p class="small" style="margin-bottom: 15px;">Enter the secret password to unlock and read the messages.</p>
+                <p class="small" style="margin-bottom: 15px;">All saved messages from the heart:</p>
                 
-                <div id="pinArea">
-                    <input type="password" id="pinInput" class="pin-input" placeholder="Enter password">
-                    <br>
-                    <button onclick="unlockMessages()" style="padding: 10px 25px; font-size: 15px;">Unlock ♡</button>
-                </div>
-
-                <div id="messagesContainer" style="margin-top: 25px; display: none;"></div>
+                <div id="messagesContainer" style="margin-top: 15px;"></div>
             </div>
         </section>
 
@@ -551,19 +545,18 @@
     </div>
 
     <script>
-        // بيانات الربط المحدثة في JSONBin (تم تحديث الـ Bin الجديد Public)
         const BIN_ID = "6abc7c58ac6210605a03f7d4";
         const API_KEY = "$2a$10$936tuj8.0jK9AQMwBSMGi02nu6oZjch9aCaJsXEsJXevfOJGBf5YRy";
         
-        // كلمة المرور المطلوبة لفتح الموقع ولفتح صندوق الرسائل
+        // كلمة المرور المطلوبة لدخول الموقع فقط
         const SECRET_PIN = "i love you"; 
 
-        // فتح الموقع بكلمة المرور
         function unlockSite() {
             const entered = document.getElementById("sitePasswordInput").value.trim();
             if (entered === SECRET_PIN) {
                 document.getElementById("lockScreen").style.display = "none";
                 document.getElementById("mainContent").style.display = "block";
+                loadMessages(); // تحميل الرسائل تلقائياً فور فتح الموقع
             } else {
                 alert("Incorrect password, please try again ♡");
                 document.getElementById("sitePasswordInput").value = "";
@@ -674,20 +667,6 @@
             handleInteraction(e.clientX, e.clientY);
         }, { passive: false });
 
-        // UNLOCK MESSAGES WITH PASSWORD
-        function unlockMessages() {
-            const enteredPin = document.getElementById("pinInput").value.trim();
-            if (enteredPin === SECRET_PIN) {
-                document.getElementById("pinArea").style.display = "none";
-                const container = document.getElementById("messagesContainer");
-                container.style.display = "block";
-                loadMessages();
-            } else {
-                alert("Incorrect password, please try again ♡");
-                document.getElementById("pinInput").value = "";
-            }
-        }
-
         // CLOUD MESSAGES LOGIC
         function loadMessages() {
             const container = document.getElementById("messagesContainer");
@@ -765,9 +744,7 @@
                     saveBtn.innerText = "Save Note ♡";
                     saveBtn.disabled = false;
                     alert("Note saved successfully! ♡");
-                    if (document.getElementById("messagesContainer").style.display === "block") {
-                        loadMessages();
-                    }
+                    loadMessages(); // تحديث القائمة فوراً لإظهار الرسالة الجديدة
                 } else {
                     response.text().then(text => console.log("Server error details:", text));
                     alert("Something went wrong, please try again.");
