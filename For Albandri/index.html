@@ -460,12 +460,12 @@
             gameInterval = setInterval(() => {
                 if (!isPlaying) return;
                 hearts.push({
-                    x: Math.random() * (canvas.width - 50) + 25,
-                    y: -25,
-                    size: 30,
-                    speed: Math.random() * 1.2 + 1.2
+                    x: Math.random() * (canvas.width - 60) + 30,
+                    y: -35,
+                    size: 45, // حجم أكبر وواضح
+                    speed: 1.0 // سرعة أبطأ وأكثر سلاسة للضغط
                 });
-            }, 900);
+            }, 1200);
             
             requestAnimationFrame(updateGame);
         }
@@ -504,35 +504,35 @@
             requestAnimationFrame(updateGame);
         }
 
-        function handleCanvasClick(clientX, clientY) {
+        function handleInteraction(clientX, clientY) {
             if (!isPlaying) return;
             const rect = canvas.getBoundingClientRect();
             const clickX = clientX - rect.left;
             const clickY = clientY - rect.top;
 
-            hearts.forEach((h, index) => {
-                // Expanded hit area (tolerance radius increased)
-                const centerX = h.x + h.size / 2;
-                const centerY = h.y + h.size / 2;
-                const dist = Math.hypot(clickX - centerX, clickY - centerY);
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                let h = hearts[i];
+                let centerX = h.x + h.size / 2;
+                let centerY = h.y + h.size / 2;
+                // مساحة لمس واسعة جداً لتجنب أي تفويت
+                let distance = Math.hypot(clickX - centerX, clickY - centerY);
                 
-                if (dist < h.size * 1.2) {
+                if (distance < h.size * 1.5) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
-                    hearts.splice(index, 1);
+                    hearts.splice(i, 1);
+                    break; // تسجيل قلب واحد لكل نقرة
                 }
-            });
+            }
         }
 
         canvas.addEventListener("click", function(e) {
-            handleCanvasClick(e.clientX, e.clientY);
+            handleInteraction(e.clientX, e.clientY);
         });
 
-        canvas.addEventListener("touchstart", function(e) {
+        canvas.addEventListener("pointerdown", function(e) {
             e.preventDefault();
-            if (e.touches.length > 0) {
-                handleCanvasClick(e.touches[0].clientX, e.touches[0].clientY);
-            }
+            handleInteraction(e.clientX, e.clientY);
         }, { passive: false });
 
         function saveMessage() {
