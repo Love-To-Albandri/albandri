@@ -445,17 +445,19 @@
         </div>
     </section>
 
-    <!-- WRITE A MESSAGE FOR ALBANDARI -->
+    <!-- MESSAGE BOX SECTION -->
     <section class="message-section">
         <div class="message-card">
             <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
-            <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here.</p>
+            <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here for everyone.</p>
             
             <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
             <br>
-            <button onclick="saveMessage()">Save Note ♡</button>
+            <button onclick="saveMessageToCloud()" id="saveBtn">Save Note ♡</button>
             
-            <div id="messagesContainer" style="margin-top: 25px;"></div>
+            <div id="messagesContainer" style="margin-top: 25px;">
+                <p class="small" style="color: #aa7b89;">Loading messages...</p>
+            </div>
         </div>
     </section>
 
@@ -470,6 +472,10 @@
     <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
 
     <script>
+        // ضع هنا بيانات حسابك في JSONBin
+        const BIN_ID = "YOUR_BIN_ID_HERE";
+        const API_KEY = "YOUR_MASTER_KEY_HERE";
+
         function openStory() {
             const song = document.getElementById("ourSong");
             song.play().catch(error => {
@@ -518,12 +524,10 @@
             if (!isPlaying) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw hearts
             ctx.fillStyle = "#e5aabd";
             hearts.forEach((h, index) => {
                 h.y += h.speed;
                 
-                // Stable Heart Shape
                 ctx.save();
                 ctx.translate(h.x, h.y);
                 ctx.beginPath();
@@ -536,7 +540,6 @@
                 ctx.fill();
                 ctx.restore();
 
-                // Remove if out of bounds
                 if (h.y > canvas.height + 30) {
                     hearts.splice(index, 1);
                 }
@@ -577,38 +580,86 @@
             handleInteraction(e.clientX, e.clientY);
         }, { passive: false });
 
-        function saveMessage() {
-            const noteText = document.getElementById("userNoteInput").value;
-            if (noteText.trim() !== "") {
-                let messages = JSON.parse(localStorage.getItem("albandariMessages")) || [];
-                messages.push(noteText);
-                localStorage.setItem("albandariMessages", JSON.stringify(messages));
+        // CLOUD MESSAGES LOGIC
+        function loadMessages() {
+            fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: {
+                    "X-Master-Key": API_KEY
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messages = data.record || [];
+                const container = document.getElementById("messagesContainer");
+                container.innerHTML = "";
                 
-                document.getElementById("userNoteInput").value = "";
-                displayMessages();
-            } else {
-                alert("Please write something before saving ♡");
-            }
+                if (messages.length > 0) {
+                    messages.forEach((msg) => {
+                        const box = document.createElement("div");
+                        box.className = "saved-box";
+                        box.innerHTML = `"${msg}"`;
+                        container.appendChild(box);
+                    });
+                } else {
+                    container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages yet. Be the first to write one ♡</p>`;
+                }
+            })
+            .catch(error => {
+                console.log("Error loading messages:", error);
+            });
         }
 
-        function displayMessages() {
-            const messages = JSON.parse(localStorage.getItem("albandariMessages")) || [];
-            const container = document.getElementById("messagesContainer");
-            
-            container.innerHTML = "";
-            
-            if (messages.length > 0) {
-                messages.forEach((msg) => {
-                    const box = document.createElement("div");
-                    box.className = "saved-box";
-                    box.innerHTML = `"${msg}"`;
-                    container.appendChild(box);
-                });
+        function saveMessageToCloud() {
+            const noteText = document.getElementById("userNoteInput").value.trim();
+            if (noteText === "") {
+                alert("Please write something before saving ♡");
+                return;
             }
+
+            const saveBtn = document.getElementById("saveBtn");
+            saveBtn.innerText = "Saving... ♡";
+            saveBtn.disabled = true;
+
+            fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: {
+                    "X-Master-Key": API_KEY
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                let currentMessages = data.record || [];
+                currentMessages.push(noteText);
+
+                return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": API_KEY
+                    },
+                    body: JSON.stringify(currentMessages)
+                });
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById("userNoteInput").value = "";
+                    saveBtn.innerText = "Save Note ♡";
+                    saveBtn.disabled = false;
+                    loadMessages();
+                } else {
+                    alert("Something went wrong, please try again.");
+                    saveBtn.innerText = "Save Note ♡";
+                    saveBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                alert("Error connecting. Please check your connection.");
+                saveBtn.innerText = "Save Note ♡";
+                saveBtn.disabled = false;
+            });
         }
 
         window.onload = function() {
-            displayMessages();
+            loadMessages();
         };
 
         function updateCounter() {
