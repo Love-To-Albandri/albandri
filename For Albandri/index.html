@@ -1,725 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Albandari ♡</title>
-
+    <title>Our Love Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
-            scroll-behavior: smooth;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
-            font-family: Georgia, serif;
-            background: #160b10;
-            color: #fff7f9;
+            background-color: #0b0709;
+            color: #e6dedf;
+            font-family: 'Playfair Display', 'Tajawal', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* خلفية جمالية هادئة */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 20%, #22121a 0%, #0b0709 70%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* حماية كلمة المرور للبلاطة الأولى */
+        #auth-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            gap: 20px;
             text-align: center;
         }
 
-        /* PASSWORD GATE LOCK SCREEN */
-        #lockScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: linear-gradient(135deg, #160b10, #351923, #160b10);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+        #auth-screen h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: #d4a5b8;
+            letter-spacing: 2px;
         }
 
-        .lock-card {
-            max-width: 400px;
-            width: 90%;
-            padding: 40px 30px;
-            border: 1px solid #8c4a5f;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-        }
-
-        .lock-card h2 {
-            font-size: 28px;
-            color: #f5d0dc;
-            margin-bottom: 10px;
-        }
-
-        .lock-card p {
-            color: #e8cfd7;
-            font-size: 15px;
-            margin-bottom: 25px;
-        }
-
-        /* MAIN CONTENT HIDDEN INITIALLY */
-        #mainContent {
-            display: none;
-        }
-
-        /* OPENING PAGE */
-        .home {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #160b10, #351923, #160b10);
-        }
-
-        .home-content {
-            padding: 30px;
-            animation: fadeIn 2s ease;
-        }
-
-        h1 {
-            font-size: 45px;
-            margin-bottom: 15px;
-        }
-
-        .subtitle {
-            color: #e8cfd7;
-            font-size: 18px;
-            margin-bottom: 35px;
-        }
-
-        button {
-            background: transparent;
-            color: white;
-            border: 1px solid #d9a6b6;
-            padding: 13px 35px;
+        .pin-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 165, 184, 0.3);
             border-radius: 30px;
-            font-size: 17px;
-            cursor: pointer;
-            transition: 0.3s;
+            padding: 12px 24px;
+            color: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+            width: 250px;
+            transition: all 0.3s ease;
         }
 
-        button:hover {
-            background: white;
-            color: #351923;
-            transform: scale(1.07);
+        .pin-input:focus {
+            border-color: #d4a5b8;
+            box-shadow: 0 0 15px rgba(212, 165, 184, 0.2);
         }
 
-        /* OUR STORY */
-        .story {
-            min-height: 100vh;
-            padding: 100px 20px;
-            background: linear-gradient(#160b10, #271119);
-        }
-
-        .story-title {
-            font-size: 42px;
-            margin-bottom: 10px;
-        }
-
-        .story-intro {
-            color: #dcbac5;
-            margin-bottom: 80px;
-        }
-
-        /* MOMENTS */
-        .moment {
-            max-width: 600px;
-            margin: 80px auto;
-            padding: 35px;
-            border: 1px solid #6d3b4b;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            transition: transform 0.3s ease;
-        }
-
-        .moment:hover {
-            transform: translateY(-5px);
-        }
-
-        .date {
-            color: #e5aabd;
-            font-size: 17px;
-            letter-spacing: 3px;
-        }
-
-        .moment h2 {
-            font-size: 28px;
-        }
-
-        .moment p {
-            color: #e8cfd7;
-            line-height: 1.8;
-        }
-
-        /* THOUGHTS SECTION */
-        .thoughts-section {
-            min-height: 100vh;
-            padding: 100px 20px;
-            background: linear-gradient(#271119, #1c0e14);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .thought-card {
-            max-width: 650px;
+        .main-content {
+            display: none;
             width: 100%;
-            margin: 25px auto;
-            padding: 40px;
-            border: 1px solid #7a4254;
-            border-radius: 20px;
-            background: rgba(53, 25, 35, 0.35);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            flex-direction: column;
+            gap: 40px;
         }
 
-        .thought-card p {
-            color: #f2e2e7;
-            font-size: 19px;
-            line-height: 2.1;
-            font-style: italic;
-            margin: 0;
-            direction: ltr;
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: #d4a5b8;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .heart-icon {
+            font-size: 1.2rem;
+            color: #a8577e;
+            display: block;
+            text-align: center;
+            margin: 5px 0 15px 0;
+        }
+
+        .card {
+            background: rgba(25, 15, 20, 0.6);
+            border: 1px solid rgba(212, 165, 184, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
 
-        /* CONFESSION SECTION */
-        .confession-section {
-            min-height: 100vh;
-            padding: 100px 20px;
-            background: linear-gradient(#1c0e14, #1a0d13);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .confession-card {
-            max-width: 700px;
-            padding: 50px 40px;
-            border: 1px solid #8c4a5f;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .confession-card h2 {
-            font-size: 36px;
-            color: #f5d0dc;
-            margin-bottom: 25px;
-        }
-
-        .confession-card p {
-            color: #f2e2e7;
-            font-size: 19px;
-            line-height: 2;
+        .card p {
+            font-size: 0.95rem;
+            color: #bfaab3;
             margin-bottom: 20px;
-        }
-
-        /* COMFORT SECTION */
-        .comfort-section {
-            min-height: 100vh;
-            padding: 100px 20px;
-            background: linear-gradient(#1a0d13, #160b10);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .comfort-card {
-            max-width: 700px;
-            padding: 50px 40px;
-            border: 1px solid #8c4a5f;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .comfort-card h2 {
-            font-size: 34px;
-            color: #f5d0dc;
-            margin-bottom: 25px;
-        }
-
-        .comfort-card p {
-            color: #f2e2e7;
-            font-size: 18px;
-            line-height: 2;
-            margin-bottom: 0;
-        }
-
-        /* GAME SECTION */
-        .game-section {
-            min-height: 100vh;
-            padding: 80px 20px;
-            background: linear-gradient(#160b10, #1f0d14);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .game-card {
-            max-width: 650px;
-            width: 100%;
-            padding: 30px;
-            border: 1px solid #6d3b4b;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.3);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        #gameCanvas {
-            background: #12070c;
-            border: 1px solid #8c4a5f;
-            border-radius: 15px;
-            display: block;
-            margin: 20px auto;
-            width: 340px;
-            height: 320px;
-            max-width: 100%;
-            cursor: pointer;
-            touch-action: none;
-        }
-
-        /* MESSAGE BOX SECTION */
-        .message-section {
-            padding: 100px 20px;
-            min-height: 70vh;
-            background: #14090f;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .message-card {
-            max-width: 600px;
-            width: 100%;
-            padding: 40px;
-            border: 1px solid #6d3b4b;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.02);
+            line-height: 1.6;
         }
 
         textarea {
             width: 100%;
             height: 120px;
-            background: #1e0f17;
-            border: 1px solid #8c4a5f;
+            background: rgba(11, 7, 9, 0.6);
+            border: 1px solid rgba(212, 165, 184, 0.25);
             border-radius: 12px;
             padding: 15px;
-            color: #fff7f9;
-            font-size: 16px;
-            font-family: Georgia, serif;
+            color: #fff;
+            font-family: 'Playfair Display', 'Tajawal', serif;
+            font-size: 1rem;
             resize: none;
-            margin-bottom: 20px;
             outline: none;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
         }
 
         textarea:focus {
-            border-color: #d9a6b6;
+            border-color: #d4a5b8;
         }
 
-        /* PIN INPUT STYLES */
-        .pin-input {
-            width: 100%;
-            max-width: 280px;
-            height: 45px;
-            background: #1e0f17;
-            border: 1px solid #8c4a5f;
-            border-radius: 10px;
-            padding: 0 15px;
-            color: #fff7f9;
-            font-size: 18px;
-            text-align: center;
-            outline: none;
-            margin-bottom: 15px;
-        }
-
-        .pin-input:focus {
-            border-color: #d9a6b6;
-        }
-
-        .saved-box {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px dashed #d9a6b6;
-            border-radius: 15px;
-            background: rgba(217, 166, 182, 0.05);
-            color: #f0becd;
-            font-style: italic;
-            font-size: 18px;
-            line-height: 1.8;
-            word-break: break-word;
-            text-align: left;
-            direction: ltr;
-        }
-
-        /* COUNTER */
-        .counter-section {
-            padding: 100px 20px;
-            min-height: 70vh;
-            background: #10070b;
-        }
-
-        #counter {
-            margin-top: 35px;
-            font-size: 25px;
-            line-height: 2;
-            color: #f0becd;
-        }
-
-        .small {
-            color: #aa7b89;
-            font-size: 14px;
-        }
-
-        /* MUSIC BUTTON */
-        .music-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            padding: 0;
-            border-radius: 50%;
-            background: #351923;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .btn {
+            background: linear-gradient(135deg, #4a2035, #2b111e);
+            color: #f3e6ec;
+            border: 1px solid rgba(212, 165, 184, 0.4);
+            padding: 12px 30px;
+            border-radius: 30px;
             cursor: pointer;
-            border: 1px solid #d9a6b6;
-            color: white;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn:hover {
+            background: linear-gradient(135deg, #5c2843, #381627);
+            border-color: #d4a5b8;
+            transform: translateY(-2px);
         }
 
-        @media (max-width: 600px) {
-            h1 { font-size: 34px; }
-            .story-title { font-size: 34px; }
-            .confession-card, .comfort-card { padding: 30px 20px; }
-            .confession-card h2, .comfort-card h2 { font-size: 26px; }
-            .confession-card p, .comfort-card p { font-size: 16px; }
-            #counter { font-size: 20px; }
+        /* صندوق الرسائل المحمية */
+        .messages-box {
+            display: none;
+            margin-top: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 5px;
+        }
+
+        .messages-box::-webkit-scrollbar {
+            width: 5px;
+        }
+        .messages-box::-webkit-scrollbar-thumb {
+            background: rgba(212, 165, 184, 0.2);
+            border-radius: 10px;
+        }
+
+        .message-item {
+            background: rgba(15, 9, 12, 0.8);
+            border-left: 3px solid #d4a5b8;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-break: break-word;
+            color: #e6dedf;
+        }
+
+        .no-messages {
+            color: #7d6872;
+            font-style: italic;
+            font-size: 0.9rem;
         }
     </style>
 </head>
-
 <body>
 
-    <!-- PASSWORD GATE LOCK SCREEN -->
-    <div id="lockScreen">
-        <div class="lock-card">
-            <h2>Protected Space ♡</h2>
-            <p>Please enter the secret password to enter.</p>
-            <input type="password" id="sitePasswordInput" class="pin-input" placeholder="Enter password">
-            <br>
-            <button onclick="unlockSite()" style="padding: 10px 25px; font-size: 15px;">Enter ♡</button>
+    <div class="container">
+        <!-- شاشة إدخال الرمز السري الأولية -->
+        <div id="auth-screen">
+            <h1>Our Secret Space</h1>
+            <p style="color: #9c8490; font-size: 0.9rem;">Enter the passcode to enter</p>
+            <input type="password" id="globalPinInput" class="pin-input" placeholder="Passcode..." onkeypress="checkGlobalPin(event)">
+            <button class="btn" onclick="verifyGlobalPin()">Enter ♡</button>
+        </div>
+
+        <!-- المحتوى الرئيسي للموقع (يظهر بعد كلمة المرور الصحيحة) -->
+        <div id="mainContent" class="main-content">
+            
+            <!-- قسم كتابة رسالة جديدة -->
+            <div class="card">
+                <h2 class="section-title">Write something from your heart...</h2>
+                <span class="heart-icon">♡</span>
+                <p>Write what's on your mind, and your messages will always stay here for everyone.</p>
+                
+                <textarea id="userNoteInput" placeholder="Write your feelings here..."></textarea>
+                <button id="saveBtn" class="btn" onclick="saveMessageToCloud()">Save Note ♡</button>
+            </div>
+
+            <!-- قسم صندوق الرسائل المحمي -->
+            <div class="card">
+                <h2 class="section-title">Protected Messages Box</h2>
+                <span class="heart-icon">♡</span>
+                <p>Enter the secret password to unlock and read the messages.</p>
+                
+                <div id="boxAuthSection">
+                    <input type="password" id="boxPinInput" class="pin-input" placeholder="Secret password..." style="margin-bottom: 15px;">
+                    <br>
+                    <button class="btn" onclick="unlockMessagesBox()">Unlock Box ♡</button>
+                </div>
+
+                <div id="messagesContainer" class="messages-box" style="display: none;">
+                    <!-- ستظهر الرسائل هنا تلقائياً -->
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- MAIN CONTENT (HIDDEN UNTIL UNLOCKED) -->
-    <div id="mainContent">
-
-        <!-- AUDIO -->
-        <audio id="ourSong" loop>
-            <source src="oursong.mp3" type="audio/mpeg">
-        </audio>
-
-        <!-- OPENING PAGE -->
-        <section class="home">
-            <div class="home-content">
-                <h1>For Albandari, with love ♡</h1>
-                <p class="subtitle">Just because you mean more to me than you know.</p>
-                <button onclick="openStory()">Open ♡</button>
-            </div>
-        </section>
-
-        <!-- OUR STORY -->
-        <section class="story" id="story">
-            <h1 class="story-title">Our Story ♡</h1>
-            <p class="story-intro">Albandari, somehow, out of all the people in the world, I found you.</p>
-
-            <!-- FIRST DATE -->
-            <div class="moment">
-                <div class="date">01 • 12 • 2023</div>
-                <h2>The day we met. ♡</h2>
-                <p>The day you walked into my life. I had no idea you'd become this important to me.</p>
-            </div>
-
-            <!-- SECOND DATE -->
-            <div class="moment">
-                <div class="date">27 • 01 • 2024</div>
-                <h2>The day the feeling became mutual. ♡</h2>
-                <p>The day I found out your heart felt the same way mine did.</p>
-            </div>
-        </section>
-
-        <!-- THOUGHTS SECTION -->
-        <section class="thoughts-section">
-            <h1 style="font-size: 38px; color: #f5d0dc; margin-bottom: 40px;">Thoughts ♡</h1>
-            
-            <div class="thought-card">
-                <p>"Out of all the paths and all the faces in this vast world, my heart recognized yours instantly, as if it had known you in a lifetime before this one."</p>
-            </div>
-
-            <div class="thought-card">
-                <p>"With you, I stopped counting the days and started counting the moments that truly mattered. You gave a new definition to what it means to care for someone deeply."</p>
-            </div>
-        </section>
-
-        <!-- CONFESSION SECTION -->
-        <section class="confession-section">
-            <div class="confession-card">
-                <h2>That Moment... ♡</h2>
-                <p>
-                    I remember that moment clearly.. the moment our hearts spoke before our words, and I knew my feelings weren't unreciprocated.
-                </p>
-                <p>
-                    Since that day, I've realized completely that you are not just someone who entered my life, but an essential part of my days, happiness, and every detail of my soul.
-                </p>
-                <p class="subtitle" style="margin-bottom: 0;">
-                    "Beside you, I realized that some days illuminate an entire lifetime.." ♡
-                </p>
-            </div>
-        </section>
-
-        <!-- COMFORT SECTION -->
-        <section class="comfort-section">
-            <div class="comfort-card">
-                <h2>For Tough Days... ♡</h2>
-                <p>
-                    To Albandari.. Days pass, and whatever difficulty has passed will be followed by ease and near relief. Always remain as strong as I have known you, and look forward to whatever brings peace to your mind..
-                </p>
-            </div>
-        </section>
-
-        <!-- GAME SECTION -->
-        <section class="game-section">
-            <div class="game-card">
-                <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Catch the Hearts ♡</h2>
-                <p class="small" style="margin-bottom: 15px;">Click or tap on the falling hearts to collect them!</p>
-                <div style="font-size: 18px; color: #e8cfd7; margin-bottom: 10px;">Score: <span id="scoreVal">0</span></div>
-                <canvas id="gameCanvas" width="340" height="320"></canvas>
-                <br>
-                <button onclick="startGame()" style="padding: 10px 25px; font-size: 15px;">Start Game ♡</button>
-            </div>
-        </section>
-
-        <!-- MESSAGE BOX SECTION -->
-        <section class="message-section">
-            <div class="message-card">
-                <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
-                <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here for everyone.</p>
-                
-                <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
-                <br>
-                <button onclick="saveMessageToCloud()" id="saveBtn">Save Note ♡</button>
-                
-                <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
-
-                <!-- SECURE MESSAGES BOX -->
-                <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
-                <p class="small" style="margin-bottom: 15px;">Enter the secret password to unlock and read the messages.</p>
-                
-                <div id="pinArea">
-                    <input type="password" id="pinInput" class="pin-input" placeholder="Enter password">
-                    <br>
-                    <button onclick="unlockMessages()" style="padding: 10px 25px; font-size: 15px;">Unlock ♡</button>
-                </div>
-
-                <div id="messagesContainer" style="margin-top: 25px; display: none;"></div>
-            </div>
-        </section>
-
-        <!-- LIVE COUNTER -->
-        <section class="counter-section">
-            <h1>Since We Met ♡</h1>
-            <p class="small">Since December 1, 2023 at 2:30 AM</p>
-            <div id="counter"></div>
-        </section>
-
-        <!-- MUSIC CONTROL -->
-        <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
-
-    </div>
-
     <script>
-        // بيانات الربط الخاصة بك في JSONBin
-        const BIN_ID = "6abc788affd5d160533d9176";
-        const API_KEY = "$2a$10$936tuj8.0jK9AQMwBSMGi02nu6oZjch9aCaJsXEsJXevfOJGBf5YRy";
+        // إعدادات JSONBin (ضعي بياناتك هنا)
+        const BIN_ID = "ضعِ_معرف_الـBIN_هنا"; 
+        const API_KEY = "ضعِ_مفتاح_المستر_كي_هنا";
         
-        // كلمة المرور المطلوبة لفتح الموقع ولفتح صندوق الرسائل
-        const SECRET_PIN = "i love you"; 
+        // الرمز السري المشترك الموحد
+        const SECRET_PIN = "i love you";
 
-        // فتح الموقع بكلمة المرور
-        function unlockSite() {
-            const entered = document.getElementById("sitePasswordInput").value.trim();
-            if (entered === SECRET_PIN) {
-                document.getElementById("lockScreen").style.display = "none";
-                document.getElementById("mainContent").style.display = "block";
-            } else {
-                alert("Incorrect password, please try again ♡");
-                document.getElementById("sitePasswordInput").value = "";
+        // التحقق من الرمز السري الأول لفتح الموقع
+        function checkGlobalPin(event) {
+            if (event.key === "Enter") {
+                verifyGlobalPin();
             }
         }
 
-        function openStory() {
-            const song = document.getElementById("ourSong");
-            song.play().catch(error => {
-                console.log("Audio play prevented:", error);
-            });
-            document.getElementById("story").scrollIntoView({ behavior: "smooth" });
-        }
-
-        function toggleMusic() {
-            const song = document.getElementById("ourSong");
-            if (song.paused) {
-                song.play();
-            } else {
-                song.pause();
-            }
-        }
-
-        // GAME LOGIC
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        let score = 0;
-        let hearts = [];
-        let gameInterval = null;
-        let isPlaying = false;
-
-        function startGame() {
-            score = 0;
-            document.getElementById("scoreVal").innerText = score;
-            hearts = [];
-            isPlaying = true;
-            if (gameInterval) clearInterval(gameInterval);
-            
-            gameInterval = setInterval(() => {
-                if (!isPlaying) return;
-                hearts.push({
-                    x: Math.random() * (canvas.width - 60) + 30,
-                    y: -30,
-                    speed: Math.random() * 1.2 + 2.0
-                });
-            }, 800);
-            
-            requestAnimationFrame(updateGame);
-        }
-
-        function updateGame() {
-            if (!isPlaying) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "#e5aabd";
-            hearts.forEach((h, index) => {
-                h.y += h.speed;
-                
-                ctx.save();
-                ctx.translate(h.x, h.y);
-                ctx.beginPath();
-                ctx.moveTo(0, 8);
-                ctx.bezierCurveTo(0, 3, -12, -4, -12, -12);
-                ctx.bezierCurveTo(-12, -20, 0, -20, 0, -12);
-                ctx.bezierCurveTo(0, -20, 12, -20, 12, -12);
-                ctx.bezierCurveTo(12, -4, 0, 3, 0, 8);
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-
-                if (h.y > canvas.height + 30) {
-                    hearts.splice(index, 1);
-                }
-            });
-
-            requestAnimationFrame(updateGame);
-        }
-
-        function handleInteraction(clientX, clientY) {
-            if (!isPlaying) return;
-            const rect = canvas.getBoundingClientRect();
-            
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            const clickX = (clientX - rect.left) * scaleX;
-            const clickY = (clientY - rect.top) * scaleY;
-
-            for (let i = hearts.length - 1; i >= 0; i--) {
-                let h = hearts[i];
-                let distance = Math.hypot(clickX - h.x, clickY - h.y);
-                
-                if (distance < 25) {
-                    score++;
-                    document.getElementById("scoreVal").innerText = score;
-                    hearts.splice(i, 1);
-                    break;
-                }
-            }
-        }
-
-        canvas.addEventListener("click", function(e) {
-            handleInteraction(e.clientX, e.clientY);
-        });
-
-        canvas.addEventListener("pointerdown", function(e) {
-            e.preventDefault();
-            handleInteraction(e.clientX, e.clientY);
-        }, { passive: false });
-
-        // UNLOCK MESSAGES WITH PASSWORD
-        function unlockMessages() {
-            const enteredPin = document.getElementById("pinInput").value.trim();
+        function verifyGlobalPin() {
+            const enteredPin = document.getElementById("globalPinInput").value.trim();
             if (enteredPin === SECRET_PIN) {
-                document.getElementById("pinArea").style.display = "none";
-                const container = document.getElementById("messagesContainer");
-                container.style.display = "block";
-                loadMessages();
+                document.getElementById("auth-screen").style.display = "none";
+                document.getElementById("mainContent").style.display = "flex";
             } else {
-                alert("Incorrect password, please try again ♡");
-                document.getElementById("pinInput").value = "";
+                alert("Incorrect passcode, please try again ♡");
+                document.getElementById("globalPinInput").value = "";
             }
         }
 
-        // CLOUD MESSAGES LOGIC
-        function loadMessages() {
-            const container = document.getElementById("messagesContainer");
-            container.innerHTML = `<p class="small" style="color: #aa7b89;">Loading messages...</p>`;
-
-            fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                headers: {
-                    "X-Master-Key": API_KEY
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const messages = data.record || [];
-                container.innerHTML = "";
-                
-                if (Array.isArray(messages) && messages.length > 0) {
-                    messages.forEach((msg) => {
-                        const box = document.createElement("div");
-                        box.className = "saved-box";
-                        box.innerHTML = `"${msg}"`;
-                        container.appendChild(box);
-                    });
-                } else {
-                    container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages yet. Be the first to write one ♡</p>`;
-                }
-            })
-            .catch(error => {
-                console.log("Error loading messages:", error);
-                container.innerHTML = `<p class="small" style="color: #aa7b89;">Failed to load messages.</p>`;
-            });
-        }
-
+        // حفظ رسالة جديدة في السيرفر مع معالجة المصفوفات والفراغات تلقائياً
         function saveMessageToCloud() {
             const noteText = document.getElementById("userNoteInput").value.trim();
             if (noteText === "") {
@@ -731,12 +281,18 @@
             saveBtn.innerText = "Saving... ♡";
             saveBtn.disabled = true;
 
+            // جلب البيانات الحالية من السيرفر
             fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: {
                     "X-Master-Key": API_KEY
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return { record: [] };
+                }
+                return response.json();
+            })
             .then(data => {
                 let currentMessages = data.record;
                 if (!Array.isArray(currentMessages)) {
@@ -744,6 +300,7 @@
                 }
                 currentMessages.push(noteText);
 
+                // إرسال البيانات المحدثة للسيرفر
                 return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: "PUT",
                     headers: {
@@ -760,7 +317,8 @@
                     saveBtn.innerText = "Save Note ♡";
                     saveBtn.disabled = false;
                     alert("Note saved successfully! ♡");
-                    if (document.getElementById("messagesContainer").style.display === "block") {
+                    // إذا كان صندوق الرسائل مفتوحاً، قم بتحديثه فوراً
+                    if (document.getElementById("messagesContainer").style.display === "flex") {
                         loadMessages();
                     }
                 } else {
@@ -778,32 +336,53 @@
             });
         }
 
-        function updateCounter() {
-            const startDate = new Date("2023-12-01T02:30:00");
-            const now = new Date();
-            let difference = now - startDate;
-
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            difference %= (1000 * 60 * 60 * 24);
-
-            const hours = Math.floor(difference / (1000 * 60 * 60));
-            difference %= (1000 * 60 * 60);
-
-            const minutes = Math.floor(difference / (1000 * 60));
-            difference %= (1000 * 60);
-
-            const seconds = Math.floor(difference / 1000);
-
-            document.getElementById("counter").innerHTML =
-                days + " days ♡<br>" +
-                hours + " hours • " +
-                minutes + " minutes • " +
-                seconds + " seconds";
+        // فتح صندوق الرسائل المحمي بكلمة السر
+        function unlockMessagesBox() {
+            const enteredBoxPin = document.getElementById("boxPinInput").value.trim();
+            if (enteredBoxPin === SECRET_PIN) {
+                document.getElementById("boxAuthSection").style.display = "none";
+                const container = document.getElementById("messagesContainer");
+                container.style.display = "flex";
+                loadMessages();
+            } else {
+                alert("Incorrect password for the box ♡");
+                document.getElementById("boxPinInput").value = "";
+            }
         }
 
-        updateCounter();
-        setInterval(updateCounter, 1000);
-    </script>
+        // جلب وقراءة الرسائل من السيرفر وعرضها
+        function loadMessages() {
+            const container = document.getElementById("messagesContainer");
+            container.innerHTML = "<p class='no-messages'>Loading messages... ♡</p>";
 
+            fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: {
+                    "X-Master-Key": API_KEY
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messages = data.record;
+                container.innerHTML = "";
+
+                if (!Array.isArray(messages) || messages.length === 0) {
+                    container.innerHTML = "<p class='no-messages'>No messages yet. Be the first to write one ♡</p>";
+                    return;
+                }
+
+                // عرض الرسائل (من الأحدث للأقدم)
+                messages.reverse().forEach(msg => {
+                    const msgDiv = document.createElement("div");
+                    msgDiv.className = "message-item";
+                    msgDiv.innerText = msg;
+                    container.appendChild(msgDiv);
+                });
+            })
+            .catch(error => {
+                console.log("Error loading messages:", error);
+                container.innerHTML = "<p class='no-messages'>Failed to load messages.</p>";
+            });
+        }
+    </script>
 </body>
 </html>
