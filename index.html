@@ -206,6 +206,7 @@
             margin: 20px auto;
             max-width: 100%;
             cursor: pointer;
+            touch-action: none;
         }
 
         /* MESSAGE BOX SECTION */
@@ -459,12 +460,12 @@
             gameInterval = setInterval(() => {
                 if (!isPlaying) return;
                 hearts.push({
-                    x: Math.random() * (canvas.width - 40) + 20,
-                    y: -20,
-                    size: Math.random() * 10 + 15,
-                    speed: Math.random() * 1.5 + 1.5
+                    x: Math.random() * (canvas.width - 50) + 25,
+                    y: -25,
+                    size: 30,
+                    speed: Math.random() * 1.2 + 1.2
                 });
-            }, 800);
+            }, 900);
             
             requestAnimationFrame(updateGame);
         }
@@ -503,21 +504,36 @@
             requestAnimationFrame(updateGame);
         }
 
-        canvas.addEventListener("click", function(e) {
+        function handleCanvasClick(clientX, clientY) {
             if (!isPlaying) return;
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const clickX = clientX - rect.left;
+            const clickY = clientY - rect.top;
 
             hearts.forEach((h, index) => {
-                const dist = Math.hypot(mouseX - (h.x + h.size/2), mouseY - (h.y + h.size/2));
-                if (dist < h.size) {
+                // Expanded hit area (tolerance radius increased)
+                const centerX = h.x + h.size / 2;
+                const centerY = h.y + h.size / 2;
+                const dist = Math.hypot(clickX - centerX, clickY - centerY);
+                
+                if (dist < h.size * 1.2) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
                     hearts.splice(index, 1);
                 }
             });
+        }
+
+        canvas.addEventListener("click", function(e) {
+            handleCanvasClick(e.clientX, e.clientY);
         });
+
+        canvas.addEventListener("touchstart", function(e) {
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                handleCanvasClick(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
 
         function saveMessage() {
             const noteText = document.getElementById("userNoteInput").value;
