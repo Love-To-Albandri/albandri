@@ -179,7 +179,6 @@
             align-items: center;
         }
 
-        /* تنسيق صندوق المحادثة والتاريخ والوقت */
         .chat-box {
             width: 100%;
             height: 420px;
@@ -675,12 +674,11 @@
             }
         }
 
-        // متغير لتتبع آخر تاريخ تم عرضه لتجنب تكرار فواصل التواريخ
         let lastDisplayedDate = "";
 
         async function loadChatMessages() {
             const chatContainer = document.getElementById("chatContainer");
-            lastDisplayedDate = ""; // إعادة ضبط عند التحميل الأولي
+            lastDisplayedDate = ""; 
             try {
                 const { data, error } = await supabaseClient
                     .from('chats')
@@ -704,17 +702,14 @@
             const noChat = document.getElementById("noChatText");
             if (noChat) noChat.remove();
 
-            // معالجة التاريخ والوقت
             const messageDate = createdAt ? new Date(createdAt) : new Date();
             
-            // استخراج التاريخ بتنسيق بسيط (مثال: 30 Sep 2026 أو تاريخ المحلي)
             const dateString = messageDate.toLocaleDateString(undefined, {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
             });
 
-            // التحقق مما إذا كان يوم جديد لإدراج فاصل تاريخ
             if (dateString !== lastDisplayedDate) {
                 lastDisplayedDate = dateString;
                 
@@ -724,7 +719,6 @@
                 chatContainer.appendChild(divider);
             }
 
-            // استخراج الوقت (الساعات والدقائق بصيغة 12 ساعة مع AM/PM أو حسب الرغبة)
             const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             const msgDiv = document.createElement("div");
@@ -904,19 +898,20 @@
             }
         }
 
+        // تم تحديث الاستماع ليشمل حدث الحذف (DELETE) ليتم مسح اللوحة عند الطرفين فوراً
         function subscribeToDrawing() {
             supabaseClient
                 .channel('public:drawings')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
-                    const row = payload.new;
-                    if (row && row.line_data) {
-                        drawLineFromString(row.line_data);
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'drawings' }, payload => {
+                    if (payload.eventType === 'DELETE') {
+                        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                    } else if (payload.eventType === 'INSERT' && payload.new && payload.new.line_data) {
+                        drawLineFromString(payload.new.line_data);
                     }
                 })
                 .subscribe();
         }
 
-        // تم إصلاح مسح الرسم بحيث يحذف البيانات نهائياً من قاعدة البيانات ولا تعود عند التحديث
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             try {
@@ -989,7 +984,6 @@
             drawCtx.stroke();
             drawCtx.restore();
 
-            sendSegmentDateOrLine = true;
             sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
             
             lastX = pos.x;
