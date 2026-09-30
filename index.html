@@ -204,9 +204,9 @@
             border-radius: 15px;
             display: block;
             margin: 20px auto;
-            width: 100%;
-            max-width: 400px;
-            height: 350px;
+            width: 340px;
+            height: 320px;
+            max-width: 100%;
             cursor: pointer;
             touch-action: none;
         }
@@ -396,7 +396,7 @@
             <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Catch the Hearts ♡</h2>
             <p class="small" style="margin-bottom: 15px;">Click or tap on the falling hearts to collect them!</p>
             <div style="font-size: 18px; color: #e8cfd7; margin-bottom: 10px;">Score: <span id="scoreVal">0</span></div>
-            <canvas id="gameCanvas" width="400" height="350"></canvas>
+            <canvas id="gameCanvas" width="340" height="320"></canvas>
             <br>
             <button onclick="startGame()" style="padding: 10px 25px; font-size: 15px;">Start Game ♡</button>
         </div>
@@ -462,7 +462,7 @@
             gameInterval = setInterval(() => {
                 if (!isPlaying) return;
                 hearts.push({
-                    x: Math.random() * (canvas.width - 60) + 30,
+                    x: Math.random() * (canvas.width - 60) + 20,
                     y: -35,
                     size: 45,
                     speed: 1.1
@@ -510,7 +510,6 @@
             if (!isPlaying) return;
             const rect = canvas.getBoundingClientRect();
             
-            // حساب الإحداثيات بنسبة دقيقة تطابق أبعاد الـ Canvas الداخلية بغض النظر عن حجم عرض الشاشة
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             
@@ -523,8 +522,8 @@
                 let centerY = h.y + h.size / 2;
                 let distance = Math.hypot(clickX - centerX, clickY - centerY);
                 
-                // مساحة لمس واسعة ومضمونة في كل اتجاهات الشاشة
-                if (distance < h.size * 1.6) {
+                // مساحة لمس واسعة جداً تشمل الأطراف واليمين بالكامل
+                if (distance < h.size * 2.0) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
                     hearts.splice(i, 1);
