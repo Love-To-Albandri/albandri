@@ -547,9 +547,10 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const SECRET_PIN = "2023"; 
 
+        // توحيد معرف الجهاز أو استخدام رابط ثابت للطرفين لكي يظهر إرسال الطرف الأول يمين والطرف الثاني يسار بشكل دقيق
         let myDeviceUUID = localStorage.getItem("my_device_uuid");
         if (!myDeviceUUID) {
-            myDeviceUUID = 'user_' + Math.random().toString(36.2, 9);
+            myDeviceUUID = 'device_user_1'; // تم توحيده لتجنب تعارض الـ UUID العشوائي
             localStorage.setItem("my_device_uuid", myDeviceUUID);
         }
 
@@ -717,6 +718,7 @@
             const timeString = messageDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
             const msgDiv = document.createElement("div");
+            // الرسائل التي أرسلتها أنت تظهر في اليمين (sent)، ورسائل الطرف الآخر في اليسار (received)
             msgDiv.className = "chat-message " + (senderId === myDeviceUUID ? "sent" : "received");
             
             msgDiv.innerHTML = `
@@ -900,15 +902,26 @@
 
         async function sendSegmentToSupabase(x0, y0, x1, y1, color) {
             const dataStr = `${x0},${y0},${x1},${y1},${color}`;
+            let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
+            if (!Array.isArray(localLines)) localLines = [];
+            localLines.push(dataStr);
+            localStorage.setItem("saved_canvas_lines", JSON.stringify(localLines));
+
             await supabaseClient.from('drawings').insert([{ line_data: dataStr }]);
         }
 
         async function loadSavedDrawingLines() {
+            let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
+            if (Array.isArray(localLines) && localLines.length > 0) {
+                localLines.forEach(lineStr => drawLineFromString(lineStr));
+            }
+
             const { data } = await supabaseClient.from('drawings').select('*').order('id', { ascending: true });
             if (data && data.length > 0) {
-                data.forEach(row => {
-                    drawLineFromString(row.line_data);
-                });
+                let allStrs = data.map(row => row.line_data);
+                localStorage.setItem("saved_canvas_lines", JSON.stringify(allStrs));
+                drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                allStrs.forEach(lineStr => drawLineFromString(lineStr));
             }
         }
 
@@ -918,17 +931,25 @@
             channel
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
                     if (payload.new && payload.new.line_data) {
-                        drawLineFromString(payload.new.line_data);
+                        let lineStr = payload.new.line_data;
+                        let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
+                        if (!localLines.includes(lineStr)) {
+                            localLines.push(lineStr);
+                            localStorage.setItem("saved_canvas_lines", JSON.stringify(localLines));
+                        }
+                        drawLineFromString(lineStr);
                     }
                 })
                 .on('broadcast', { event: 'clear_canvas' }, () => {
                     drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                    localStorage.removeItem("saved_canvas_lines");
                 })
                 .subscribe();
         }
 
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            localStorage.removeItem("saved_canvas_lines");
             try {
                 await supabaseClient.channel('public:drawings').send({
                     type: 'broadcast',
