@@ -177,6 +177,37 @@
             margin-bottom: 0;
         }
 
+        /* GAME SECTION */
+        .game-section {
+            min-height: 100vh;
+            padding: 80px 20px;
+            background: linear-gradient(#160b10, #1f0d14);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-card {
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+            border: 1px solid #6d3b4b;
+            border-radius: 25px;
+            background: rgba(53, 25, 35, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameCanvas {
+            background: #12070c;
+            border: 1px solid #8c4a5f;
+            border-radius: 15px;
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            cursor: pointer;
+        }
+
         /* MESSAGE BOX SECTION */
         .message-section {
             padding: 100px 20px;
@@ -356,6 +387,18 @@
         </div>
     </section>
 
+    <!-- GAME SECTION -->
+    <section class="game-section">
+        <div class="game-card">
+            <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Catch the Hearts ♡</h2>
+            <p class="small" style="margin-bottom: 15px;">Click or tap on the falling hearts to collect them!</p>
+            <div style="font-size: 18px; color: #e8cfd7; margin-bottom: 10px;">Score: <span id="scoreVal">0</span></div>
+            <canvas id="gameCanvas" width="400" height="350"></canvas>
+            <br>
+            <button onclick="startGame()" style="padding: 10px 25px; font-size: 15px;">Start Game ♡</button>
+        </div>
+    </section>
+
     <!-- WRITE A MESSAGE FOR ALBANDARI -->
     <section class="message-section">
         <div class="message-card">
@@ -397,6 +440,84 @@
                 song.pause();
             }
         }
+
+        // GAME LOGIC
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        let score = 0;
+        let hearts = [];
+        let gameInterval = null;
+        let isPlaying = false;
+
+        function startGame() {
+            score = 0;
+            document.getElementById("scoreVal").innerText = score;
+            hearts = [];
+            isPlaying = true;
+            if (gameInterval) clearInterval(gameInterval);
+            
+            gameInterval = setInterval(() => {
+                if (!isPlaying) return;
+                hearts.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: -20,
+                    size: Math.random() * 10 + 15,
+                    speed: Math.random() * 1.5 + 1.5
+                });
+            }, 800);
+            
+            requestAnimationFrame(updateGame);
+        }
+
+        function updateGame() {
+            if (!isPlaying) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw hearts
+            ctx.fillStyle = "#e5aabd";
+            hearts.forEach((h, index) => {
+                h.y += h.speed;
+                
+                // Draw heart shape
+                ctx.beginPath();
+                let x = h.x;
+                let y = h.y;
+                let size = h.size;
+                ctx.moveTo(x, y + size / 4);
+                ctx.quadraticCurveTo(x, y, x + size / 4, y);
+                ctx.quadraticCurveTo(x + size / 2, y, x + size / 2, y + size / 4);
+                ctx.quadraticCurveTo(x + size / 2, y, x + size * 3/4, y);
+                ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
+                ctx.quadraticCurveTo(x + size, y + size / 2, x + size * 3/4, y + size * 3/4);
+                ctx.lineTo(x + size / 2, y + size);
+                ctx.lineTo(x + size / 4, y + size * 3/4);
+                ctx.quadraticCurveTo(x, y + size / 2, x, y + size / 4);
+                ctx.fill();
+
+                // Remove if out of bounds
+                if (h.y > canvas.height) {
+                    hearts.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(updateGame);
+        }
+
+        canvas.addEventListener("click", function(e) {
+            if (!isPlaying) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            hearts.forEach((h, index) => {
+                const dist = Math.hypot(mouseX - (h.x + h.size/2), mouseY - (h.y + h.size/2));
+                if (dist < h.size) {
+                    score++;
+                    document.getElementById("scoreVal").innerText = score;
+                    hearts.splice(index, 1);
+                }
+            });
+        });
 
         function saveMessage() {
             const noteText = document.getElementById("userNoteInput").value;
