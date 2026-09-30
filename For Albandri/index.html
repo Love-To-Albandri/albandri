@@ -3,14 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Albandari ♡</title>
 
     <style>
-
         * {
             box-sizing: border-box;
             scroll-behavior: smooth;
@@ -25,20 +21,12 @@
         }
 
         /* OPENING PAGE */
-
         .home {
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #160b10,
-                    #351923,
-                    #160b10
-                );
+            background: linear-gradient(135deg, #160b10, #351923, #160b10);
         }
 
         .home-content {
@@ -75,16 +63,10 @@
         }
 
         /* OUR STORY */
-
         .story {
             min-height: 100vh;
             padding: 100px 20px;
-
-            background:
-                linear-gradient(
-                    #160b10,
-                    #271119
-                );
+            background: linear-gradient(#160b10, #271119);
         }
 
         .story-title {
@@ -98,7 +80,6 @@
         }
 
         /* MOMENTS */
-
         .moment {
             max-width: 600px;
             margin: 80px auto;
@@ -106,6 +87,11 @@
             border: 1px solid #6d3b4b;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.03);
+            transition: transform 0.3s ease;
+        }
+
+        .moment:hover {
+            transform: translateY(-5px);
         }
 
         .date {
@@ -123,8 +109,129 @@
             line-height: 1.8;
         }
 
-        /* COUNTER */
+        /* CONFESSION SECTION */
+        .confession-section {
+            min-height: 100vh;
+            padding: 100px 20px;
+            background: linear-gradient(#271119, #1a0d13);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
+        .confession-card {
+            max-width: 700px;
+            padding: 50px 40px;
+            border: 1px solid #8c4a5f;
+            border-radius: 25px;
+            background: rgba(53, 25, 35, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1.5s ease;
+        }
+
+        .confession-card h2 {
+            font-size: 36px;
+            color: #f5d0dc;
+            margin-bottom: 25px;
+        }
+
+        .confession-card p {
+            color: #f2e2e7;
+            font-size: 19px;
+            line-height: 2;
+            margin-bottom: 20px;
+        }
+
+        /* COMFORT SECTION */
+        .comfort-section {
+            min-height: 100vh;
+            padding: 100px 20px;
+            background: linear-gradient(#1a0d13, #160b10);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .comfort-card {
+            max-width: 700px;
+            padding: 50px 40px;
+            border: 1px solid #8c4a5f;
+            border-radius: 25px;
+            background: rgba(53, 25, 35, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1.5s ease;
+        }
+
+        .comfort-card h2 {
+            font-size: 34px;
+            color: #f5d0dc;
+            margin-bottom: 25px;
+        }
+
+        .comfort-card p {
+            color: #f2e2e7;
+            font-size: 18px;
+            line-height: 2;
+            margin-bottom: 20px;
+        }
+
+        /* MESSAGE BOX SECTION */
+        .message-section {
+            padding: 100px 20px;
+            min-height: 70vh;
+            background: #14090f;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .message-card {
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            border: 1px solid #6d3b4b;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #1e0f17;
+            border: 1px solid #8c4a5f;
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff7f9;
+            font-size: 16px;
+            font-family: Georgia, serif;
+            resize: none;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #d9a6b6;
+        }
+
+        .saved-box {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px dashed #d9a6b6;
+            border-radius: 15px;
+            background: rgba(217, 166, 182, 0.05);
+            color: #f0becd;
+            font-style: italic;
+            font-size: 18px;
+            line-height: 1.8;
+            word-break: break-word;
+            text-align: left;
+            direction: ltr;
+        }
+
+        /* COUNTER */
         .counter-section {
             padding: 100px 20px;
             min-height: 70vh;
@@ -144,7 +251,6 @@
         }
 
         /* MUSIC BUTTON */
-
         .music-button {
             position: fixed;
             bottom: 20px;
@@ -155,17 +261,21 @@
             border-radius: 50%;
             background: #351923;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: 1px solid #d9a6b6;
+            color: white;
         }
 
         /* ANIMATION */
-
         @keyframes fadeIn {
-
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -173,252 +283,184 @@
         }
 
         /* MOBILE */
-
         @media (max-width: 600px) {
-
-            h1 {
-                font-size: 34px;
-            }
-
-            .story-title {
-                font-size: 34px;
-            }
-
-            #counter {
-                font-size: 20px;
-            }
+            h1 { font-size: 34px; }
+            .story-title { font-size: 34px; }
+            .confession-card, .comfort-card { padding: 30px 20px; }
+            .confession-card h2, .comfort-card h2 { font-size: 26px; }
+            .confession-card p, .comfort-card p { font-size: 16px; }
+            #counter { font-size: 20px; }
         }
-
     </style>
-
 </head>
 
 <body>
 
+    <!-- AUDIO -->
+    <audio id="ourSong" loop>
+        <source src="oursong.mp3" type="audio/mpeg">
+    </audio>
 
-<!-- AUDIO -->
+    <!-- OPENING PAGE -->
+    <section class="home">
+        <div class="home-content">
+            <h1>For Albandari, with love ♡</h1>
+            <p class="subtitle">Just because you mean more to me than you know.</p>
+            <button onclick="openStory()">Open ♡</button>
+        </div>
+    </section>
 
-<audio id="ourSong" loop>
+    <!-- OUR STORY -->
+    <section class="story" id="story">
+        <h1 class="story-title">Our Story ♡</h1>
+        <p class="story-intro">Albandari, somehow, out of all the people in the world, I found you.</p>
 
-    <source
-        src="oursong.mp3"
-        type="audio/mpeg">
-
-</audio>
-
-
-<!-- OPENING PAGE -->
-
-<section class="home">
-
-    <div class="home-content">
-
-        <h1>
-            For Albandari, with love ♡
-        </h1>
-
-        <p class="subtitle">
-            Just because you mean more
-            to me than you know.
-        </p>
-
-        <button onclick="openStory()">
-            Open ♡
-        </button>
-
-    </div>
-
-</section>
-
-
-<!-- OUR STORY -->
-
-<section class="story" id="story">
-
-    <h1 class="story-title">
-        Our Story ♡
-    </h1>
-
-    <p class="story-intro">
-        Albandari, somehow,
-        out of all the people in the world,
-        I found you.
-    </p>
-
-
-    <!-- FIRST DATE -->
-
-    <div class="moment">
-
-        <div class="date">
-            01 • 12 • 2023
+        <!-- FIRST DATE -->
+        <div class="moment">
+            <div class="date">01 • 12 • 2023</div>
+            <h2>The day we met. ♡</h2>
+            <p>The day you walked into my life. I had no idea you'd become this important to me.</p>
         </div>
 
-        <h2>
-            The day we met. ♡
-        </h2>
-
-        <p>
-            The day you walked into my life.
-            I had no idea you'd become
-            this important to me.
-        </p>
-
-    </div>
-
-
-    <!-- SECOND DATE -->
-
-    <div class="moment">
-
-        <div class="date">
-            27 • 01 • 2024
+        <!-- SECOND DATE -->
+        <div class="moment">
+            <div class="date">27 • 01 • 2024</div>
+            <h2>The day the feeling became mutual. ♡</h2>
+            <p>The day I found out your heart felt the same way mine did.</p>
         </div>
+    </section>
 
-        <h2>
-            The day the feeling became mutual. ♡
-        </h2>
+    <!-- CONFESSION SECTION -->
+    <section class="confession-section">
+        <div class="confession-card">
+            <h2>That Moment... ♡</h2>
+            <p>
+                I remember that moment clearly.. the moment our hearts spoke before our words, and I knew my feelings weren't unreciprocated.
+            </p>
+            <p>
+                Since that day, I've realized completely that you are not just someone who entered my life, but an essential part of my days, happiness, and every detail of my soul.
+            </p>
+            <p class="subtitle" style="margin-bottom: 0;">
+                "Beside you, I realized that some days illuminate an entire lifetime.." ♡
+            </p>
+        </div>
+    </section>
 
-        <p>
-            The day I found out your heart
-            felt the same way mine did.
-        </p>
+    <!-- COMFORT SECTION -->
+    <section class="comfort-section">
+        <div class="comfort-card">
+            <h2>For Tough Days... ♡</h2>
+            <p>
+                To Albandari.. Days pass, and whatever difficulty has passed will be followed by ease and near relief. Always remain as strong as I have known you, and look forward to whatever brings peace to your mind..
+            </p>
+            <p class="subtitle" style="margin-bottom: 0;">
+                "There is always room for relief, and new beginnings that suit you.." ♡
+            </p>
+        </div>
+    </section>
 
-    </div>
+    <!-- WRITE A MESSAGE FOR ALBANDARI -->
+    <section class="message-section">
+        <div class="message-card">
+            <h2 style="font-size: 28px; margin-bottom: 15px;">Leave a note for me... ♡</h2>
+            <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here.</p>
+            
+            <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
+            <br>
+            <button onclick="saveMessage()">Save Note ♡</button>
+            
+            <div id="messagesContainer" style="margin-top: 25px;"></div>
+        </div>
+    </section>
 
-</section>
+    <!-- LIVE COUNTER -->
+    <section class="counter-section">
+        <h1>Since We Met ♡</h1>
+        <p class="small">Since December 1, 2023 at 2:30 AM</p>
+        <div id="counter"></div>
+    </section>
 
+    <!-- MUSIC CONTROL -->
+    <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
 
-<!-- LIVE COUNTER -->
-
-<section class="counter-section">
-
-    <h1>
-        Since We Met ♡
-    </h1>
-
-    <p class="small">
-        Since December 1, 2023 at 2:30 AM
-    </p>
-
-    <div id="counter"></div>
-
-</section>
-
-
-<!-- MUSIC CONTROL -->
-
-<button
-    class="music-button"
-    onclick="toggleMusic()">
-
-    ♫
-
-</button>
-
-
-<script>
-
-    /* OPEN STORY + PLAY SONG */
-
-    function openStory() {
-
-        const song =
-            document.getElementById("ourSong");
-
-        song.play();
-
-        document
-            .getElementById("story")
-            .scrollIntoView({
-                behavior: "smooth"
+    <script>
+        function openStory() {
+            const song = document.getElementById("ourSong");
+            song.play().catch(error => {
+                console.log("Audio play prevented:", error);
             });
-    }
-
-
-    /* PLAY / PAUSE MUSIC */
-
-    function toggleMusic() {
-
-        const song =
-            document.getElementById("ourSong");
-
-        if (song.paused) {
-            song.play();
+            document.getElementById("story").scrollIntoView({ behavior: "smooth" });
         }
 
-        else {
-            song.pause();
+        function toggleMusic() {
+            const song = document.getElementById("ourSong");
+            if (song.paused) {
+                song.play();
+            } else {
+                song.pause();
+            }
         }
-    }
 
+        function saveMessage() {
+            const noteText = document.getElementById("userNoteInput").value;
+            if (noteText.trim() !== "") {
+                let messages = JSON.parse(localStorage.getItem("albandariMessages")) || [];
+                messages.push(noteText);
+                localStorage.setItem("albandariMessages", JSON.stringify(messages));
+                
+                document.getElementById("userNoteInput").value = "";
+                displayMessages();
+            } else {
+                alert("Please write something before saving ♡");
+            }
+        }
 
-    /* LIVE COUNTER */
+        function displayMessages() {
+            const messages = JSON.parse(localStorage.getItem("albandariMessages")) || [];
+            const container = document.getElementById("messagesContainer");
+            
+            container.innerHTML = "";
+            
+            if (messages.length > 0) {
+                messages.forEach((msg) => {
+                    const box = document.createElement("div");
+                    box.className = "saved-box";
+                    box.innerHTML = `"${msg}"`;
+                    container.appendChild(box);
+                });
+            }
+        }
 
-    function updateCounter() {
+        window.onload = function() {
+            displayMessages();
+        };
 
-        const startDate =
-            new Date("2023-12-01T02:30:00");
+        function updateCounter() {
+            const startDate = new Date("2023-12-01T02:30:00");
+            const now = new Date();
+            let difference = now - startDate;
 
-        const now =
-            new Date();
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            difference %= (1000 * 60 * 60 * 24);
 
-        let difference =
-            now - startDate;
+            const hours = Math.floor(difference / (1000 * 60 * 60));
+            difference %= (1000 * 60 * 60);
 
-        const days =
-            Math.floor(
-                difference /
-                (1000 * 60 * 60 * 24)
-            );
+            const minutes = Math.floor(difference / (1000 * 60));
+            difference %= (1000 * 60);
 
-        difference %=
-            (1000 * 60 * 60 * 24);
+            const seconds = Math.floor(difference / 1000);
 
-        const hours =
-            Math.floor(
-                difference /
-                (1000 * 60 * 60)
-            );
+            document.getElementById("counter").innerHTML =
+                days + " days ♡<br>" +
+                hours + " hours • " +
+                minutes + " minutes • " +
+                seconds + " seconds";
+        }
 
-        difference %=
-            (1000 * 60 * 60);
-
-        const minutes =
-            Math.floor(
-                difference /
-                (1000 * 60)
-            );
-
-        difference %=
-            (1000 * 60);
-
-        const seconds =
-            Math.floor(
-                difference / 1000
-            );
-
-        document
-            .getElementById("counter")
-            .innerHTML =
-
-            days + " days ♡<br>" +
-            hours + " hours • " +
-            minutes + " minutes • " +
-            seconds + " seconds";
-    }
-
-
-    updateCounter();
-
-    setInterval(
-        updateCounter,
-        1000
-    );
-
-</script>
-
+        updateCounter();
+        setInterval(updateCounter, 1000);
+    </script>
 
 </body>
-
 </html>
