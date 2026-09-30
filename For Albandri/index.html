@@ -405,11 +405,12 @@
     <script>
         // إعدادات اتصال Supabase السحابي
         const SUPABASE_URL = "https://ymnuakhkbvdicbjfrzco.supabase.co";
-        const SUPABASE_KEY = "Sb_publishable_uMe9vGok4IAR8z9H01Nrig_6EIa17fp";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltbnVha2hrYnZkaWNiamZyemNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MjkyMjcsImV4cCI6MjEwNjMwNTIyN30.mjL8dNQ8KNPDbCLvXnmpHq-nn11ziiEcOAFzW6-DYkc";
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const SECRET_PIN = "i love you"; 
+        // كلمة المرور الجديدة أصبحت 2023
+        const SECRET_PIN = "2023"; 
 
         function unlockSite() {
             const entered = document.getElementById("sitePasswordInput").value.trim();
@@ -484,7 +485,7 @@
                     .insert([{ content: noteText }]);
 
                 if (error) {
-                    alert("Error saving message. Make sure the table 'messages' and column 'content' exist in Supabase.");
+                    alert("Error saving message.");
                 } else {
                     document.getElementById("userNoteInput").value = "";
                     alert("Note saved successfully for ever! ♡");
