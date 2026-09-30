@@ -464,10 +464,10 @@
                 hearts.push({
                     x: Math.random() * (canvas.width - 60) + 20,
                     y: -35,
-                    size: 45,
-                    speed: 1.1
+                    size: 42,
+                    speed: Math.random() * 1.5 + 2.5 // سرعة أعلى وأكثر حماساً
                 });
-            }, 1200);
+            }, 750); // تظهر القلوب بشكل أسرع وورا بعض
             
             requestAnimationFrame(updateGame);
         }
@@ -522,7 +522,7 @@
                 let centerY = h.y + h.size / 2;
                 let distance = Math.hypot(clickX - centerX, clickY - centerY);
                 
-                // مساحة لمس واسعة جداً تشمل الأطراف واليمين بالكامل
+                // منطقة لمس واسعة لتسهيل التجميع حتى مع السرعة الجديدة
                 if (distance < h.size * 2.0) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
