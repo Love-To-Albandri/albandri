@@ -215,7 +215,6 @@
             cursor: pointer;
         }
 
-        /* تكبير شاشة الرسم لتعرض بشكل كبير وواضح */
         #drawingCanvas {
             width: 100%;
             max-width: 650px;
@@ -387,7 +386,6 @@
             </div>
         </section>
 
-        <!-- لوحة الرسم المشتركة الكبيرة واللحظية -->
         <section class="drawing-section">
             <div class="drawing-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
@@ -512,7 +510,6 @@
             }
         }
 
-        // لعبة القلوب
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         let score = 0;
@@ -580,7 +577,7 @@
             }
         });
 
-        // نظام الرسم الجديد (يعتمد على إرسال النقاط مباشرة بدون تقطيع)
+        // نظام الرسم المتوافق مع جدول line_data
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
         let isDrawing = false;
@@ -598,24 +595,33 @@
             drawCtx.strokeStyle = brushColor;
         }
 
-        function drawLineLocally(x0, y0, x1, y1, color) {
-            drawCtx.save();
-            drawCtx.strokeStyle = color;
-            drawCtx.beginPath();
-            drawCtx.moveTo(x0, y0);
-            drawCtx.lineTo(x1, y1);
-            drawCtx.stroke();
-            drawCtx.restore();
+        function drawLineFromString(dataStr) {
+            if (!dataStr) return;
+            if (dataStr === "CLEAR") {
+                drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                return;
+            }
+            const parts = dataStr.split(",");
+            if (parts.length === 5) {
+                const x0 = parseFloat(parts[0]);
+                const y0 = parseFloat(parts[1]);
+                const x1 = parseFloat(parts[2]);
+                const y1 = parseFloat(parts[3]);
+                const color = parts[4];
+
+                drawCtx.save();
+                drawCtx.strokeStyle = color;
+                drawCtx.beginPath();
+                drawCtx.moveTo(x0, y0);
+                drawCtx.lineTo(x1, y1);
+                drawCtx.stroke();
+                drawCtx.restore();
+            }
         }
 
         async function sendSegmentToSupabase(x0, y0, x1, y1, color) {
-            await supabaseClient.from('drawings').insert([{
-                x0: x0,
-                y0: y0,
-                x1: x1,
-                y1: y1,
-                color: color
-            }]);
+            const dataStr = `${x0},${y0},${x1},${y1},${color}`;
+            await supabaseClient.from('drawings').insert([{ line_data: dataStr }]);
         }
 
         async function loadSavedDrawingLines() {
@@ -623,9 +629,7 @@
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             if (data && data.length > 0) {
                 data.forEach(row => {
-                    if (row.x0 !== null && row.x1 !== null) {
-                        drawLineLocally(row.x0, row.y0, row.x1, row.y1, row.color || '#f5d0dc');
-                    }
+                    drawLineFromString(row.line_data);
                 });
             }
         }
@@ -635,13 +639,8 @@
                 .channel('public:drawings')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
                     const row = payload.new;
-                    if (row && row.x0 !== null) {
-                        // إذا كانت الإحداثيات قيمتها -1 يعني هذا أمر مسح الشاشة
-                        if (row.x0 === -1) {
-                            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                        } else {
-                            drawLineLocally(row.x0, row.y0, row.x1, row.y1, row.color || '#f5d0dc');
-                        }
+                    if (row && row.line_data) {
+                        drawLineFromString(row.line_data);
                     }
                 })
                 .subscribe();
@@ -649,8 +648,7 @@
 
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-            // إرسال إشارة مسح للسيرفر
-            await supabaseClient.from('drawings').insert([{ x0: -1, y0: -1, x1: -1, y1: -1, color: '#000000' }]);
+            await supabaseClient.from('drawings').insert([{ line_data: "CLEAR" }]);
         }
 
         function getMousePos(e) {
@@ -680,7 +678,16 @@
             if (!isDrawing) return;
             const pos = getMousePos(e);
             
-            drawLineLocally(lastX, lastY, pos.x, pos.y, brushColor);
+            // الرسم المحلي الفوري
+            drawCtx.save();
+            drawCtx.strokeStyle = brushColor;
+            drawCtx.beginPath();
+            drawCtx.moveTo(lastX, lastY);
+            drawCtx.lineTo(pos.x, pos.y);
+            drawCtx.stroke();
+            drawCtx.restore();
+
+            // الإرسال لقاعدة البيانات
             sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
             
             lastX = pos.x;
@@ -703,10 +710,18 @@
             if (!isDrawing) return;
             const pos = getTouchPos(e);
             
-            drawLineLocally(lastX, lastY, pos.x, pos.y, brushColor);
+            drawCtx.save();
+            drawCtx.strokeStyle = brushColor;
+            drawCtx.beginPath();
+            drawCtx.moveTo(lastX, lastY);
+            drawCtx.lineTo(pos.x, pos.y);
+            drawCtx.stroke();
+            drawCtx.restore();
+
             sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
             
             lastX = pos.x;
+            lastY, lastY = pos.y; // تم التصحيح هنا
             lastY = pos.y;
             e.preventDefault();
         });
