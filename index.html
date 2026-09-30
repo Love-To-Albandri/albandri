@@ -181,7 +181,7 @@
 
         .chat-box {
             width: 100%;
-            height: 420px;
+            height: 400px;
             background: #12070c;
             border: 1px solid #8c4a5f;
             border-radius: 15px;
@@ -189,48 +189,19 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
             text-align: left;
             direction: ltr;
         }
 
-        .chat-date-divider {
-            text-align: center;
-            color: #aa7b89;
-            font-size: 13px;
-            margin: 15px 0 10px 0;
-            position: relative;
-            width: 100%;
-        }
-
-        .chat-date-divider span {
-            background: #12070c;
-            padding: 0 12px;
-            z-index: 1;
-            position: relative;
-        }
-
-        .chat-date-divider::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: #4a2431;
-            z-index: 0;
-        }
-
         .chat-message {
             max-width: 75%;
-            padding: 10px 14px;
-            border-radius: 14px;
+            padding: 12px 16px;
+            border-radius: 15px;
             font-size: 15px;
             line-height: 1.5;
             word-break: break-word;
-            display: flex;
-            flex-direction: column;
         }
 
         .chat-message.sent {
@@ -247,16 +218,6 @@
             align-self: flex-start;
             border: 1px solid #572a39;
             border-bottom-left-radius: 3px;
-        }
-
-        .chat-msg-text {
-            margin-bottom: 4px;
-        }
-
-        .chat-msg-time {
-            font-size: 10px;
-            color: #aa7b89;
-            align-self: flex-end;
         }
 
         .chat-input-area {
@@ -539,7 +500,7 @@
                 <p class="small" style="margin-bottom: 20px;">Talk to each other in real-time...</p>
                 
                 <div class="chat-box" id="chatContainer">
-                    <div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Loading chat...</div>
+                    <div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Start talking ♡</div>
                 </div>
 
                 <div class="chat-input-area">
@@ -674,73 +635,46 @@
             }
         }
 
-        let lastDisplayedDate = "";
-
+        // نظام الشات: يبدأ فارغاً ونظيفاً مع البث الفوري وتفريغ التجارب القديمة
         async function loadChatMessages() {
             const chatContainer = document.getElementById("chatContainer");
-            lastDisplayedDate = ""; 
+            chatContainer.innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Start talking ♡</div>`;
             try {
-                const { data, error } = await supabaseClient
-                    .from('chats')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-
-                if (error) return;
-                chatContainer.innerHTML = "";
-                if (data && data.length > 0) {
-                    data.forEach((row) => {
-                        appendChatToDOM(row.content, row.sender_id, row.created_at);
-                    });
-                } else {
-                    chatContainer.innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">No messages in chat yet. Start talking ♡</div>`;
-                }
+                await supabaseClient.from('chats').delete().neq('id', 0);
             } catch (err) {}
         }
 
-        function appendChatToDOM(content, senderId, createdAt) {
+        function appendChatToDOM(content, senderId) {
             const chatContainer = document.getElementById("chatContainer");
             const noChat = document.getElementById("noChatText");
             if (noChat) noChat.remove();
 
-            const messageDate = createdAt ? new Date(createdAt) : new Date();
-            
-            const dateString = messageDate.toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-
-            if (dateString !== lastDisplayedDate) {
-                lastDisplayedDate = dateString;
-                
-                const divider = document.createElement("div");
-                divider.className = "chat-date-divider";
-                divider.innerHTML = `<span>${dateString}</span>`;
-                chatContainer.appendChild(divider);
-            }
-
-            const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
             const msgDiv = document.createElement("div");
             msgDiv.className = "chat-message " + (senderId === myDeviceUUID ? "sent" : "received");
-            
-            msgDiv.innerHTML = `
-                <div class="chat-msg-text">${content}</div>
-                <div class="chat-msg-time">${timeString}</div>
-            `;
+            msgDiv.innerText = content;
 
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function subscribeToChat() {
-            supabaseClient
-                .channel('public:chats')
+            const channel = supabaseClient.channel('public:chats');
+
+            channel
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, payload => {
                     const row = payload.new;
                     if (row && row.content) {
-                        appendChatToDOM(row.content, row.sender_id, row.created_at);
+                        appendChatToDOM(row.content, row.sender_id);
                     }
+                })
+                .on('broadcast', { event: 'new_chat_message' }, payload => {
+                    const row = payload.payload;
+                    if (row && row.content) {
+                        appendChatToDOM(row.content, row.sender_id);
+                    }
+                })
+                .on('broadcast', { event: 'clear_chat' }, () => {
+                    document.getElementById("chatContainer").innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Start talking ♡</div>`;
                 })
                 .subscribe();
         }
@@ -750,11 +684,22 @@
             const text = input.value.trim();
             if (text === "") return;
 
+            const messageData = {
+                content: text,
+                sender_id: myDeviceUUID
+            };
+
             input.value = "";
+            appendChatToDOM(text, myDeviceUUID);
+
             try {
-                await supabaseClient
-                    .from('chats')
-                    .insert([{ content: text, sender_id: myDeviceUUID }]);
+                await supabaseClient.channel('public:chats').send({
+                    type: 'broadcast',
+                    event: 'new_chat_message',
+                    payload: messageData
+                });
+
+                await supabaseClient.from('chats').insert([messageData]);
             } catch (err) {}
         }
 
@@ -861,10 +806,6 @@
 
         function drawLineFromString(dataStr) {
             if (!dataStr) return;
-            if (dataStr === "CLEAR") {
-                drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                return;
-            }
             const parts = dataStr.split(",");
             if (parts.length === 5) {
                 const x0 = parseFloat(parts[0]);
@@ -898,16 +839,17 @@
             }
         }
 
-        // تم تحديث الاستماع ليشمل حدث الحذف (DELETE) ليتم مسح اللوحة عند الطرفين فوراً
         function subscribeToDrawing() {
-            supabaseClient
-                .channel('public:drawings')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'drawings' }, payload => {
-                    if (payload.eventType === 'DELETE') {
-                        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                    } else if (payload.eventType === 'INSERT' && payload.new && payload.new.line_data) {
+            const channel = supabaseClient.channel('public:drawings');
+
+            channel
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
+                    if (payload.new && payload.new.line_data) {
                         drawLineFromString(payload.new.line_data);
                     }
+                })
+                .on('broadcast', { event: 'clear_canvas' }, () => {
+                    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
                 })
                 .subscribe();
         }
@@ -915,6 +857,11 @@
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             try {
+                await supabaseClient.channel('public:drawings').send({
+                    type: 'broadcast',
+                    event: 'clear_canvas',
+                    payload: {}
+                });
                 await supabaseClient.from('drawings').delete().neq('id', 0);
             } catch (err) {}
         }
