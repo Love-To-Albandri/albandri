@@ -167,7 +167,7 @@
         .counter-section { background: #10070b; min-height: 70vh; }
 
         .thought-card, .confession-card, .comfort-card, .game-card, .drawing-card, .message-card {
-            max-width: 650px;
+            max-width: 750px;
             width: 100%;
             margin: 25px auto;
             padding: 40px;
@@ -206,7 +206,6 @@
             border-radius: 15px;
             display: block;
             margin: 20px auto;
-            max-width: 100%;
             touch-action: none;
         }
 
@@ -216,9 +215,11 @@
             cursor: pointer;
         }
 
+        /* تكبير شاشة الرسم لتعرض بشكل كبير وواضح */
         #drawingCanvas {
-            width: 400px;
-            height: 320px;
+            width: 100%;
+            max-width: 650px;
+            height: 450px;
             cursor: crosshair;
         }
 
@@ -386,15 +387,15 @@
             </div>
         </section>
 
-        <!-- لوحة الرسم المشتركة اللحظية -->
+        <!-- لوحة الرسم المشتركة الكبيرة واللحظية -->
         <section class="drawing-section">
             <div class="drawing-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
                 <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on her screen live! ♡</p>
                 
-                <canvas id="drawingCanvas" width="400" height="320"></canvas>
+                <canvas id="drawingCanvas" width="700" height="450"></canvas>
                 
-                <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; align-items: center;">
+                <div style="display: flex; justify-content: center; gap: 12px; margin-top: 15px; align-items: center;">
                     <button onclick="setBrushColor('#f5d0dc')" style="background: #f5d0dc; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="Pink"></button>
                     <button onclick="setBrushColor('#d9a6b6')" style="background: #d9a6b6; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="Rose"></button>
                     <button onclick="setBrushColor('#ffffff')" style="background: #ffffff; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="White"></button>
@@ -442,7 +443,7 @@
                 document.getElementById("lockScreen").style.display = "none";
                 document.getElementById("mainContent").style.display = "block";
                 loadMessagesFromSupabase();
-                loadSavedDrawing();
+                loadSavedDrawingLines();
                 subscribeToDrawing();
             } else {
                 alert("Incorrect password, please try again ♡");
@@ -579,56 +580,68 @@
             }
         });
 
-        // لوحة الرسم اللحظية (Real-time Canvas)
+        // نظام الرسم الجديد (يعتمد على إرسال النقاط مباشرة بدون تقطيع)
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
         let isDrawing = false;
         let brushColor = "#f5d0dc";
         let lastX = 0;
         let lastY = 0;
-        let isRemoteUpdate = false; // لمنع تداخل التحديثات الدورية
 
         drawCtx.strokeStyle = brushColor;
-        drawCtx.lineWidth = 3;
+        drawCtx.lineWidth = 4;
         drawCtx.lineCap = "round";
+        drawCtx.lineJoin = "round";
 
         function setBrushColor(color) {
             brushColor = color;
             drawCtx.strokeStyle = brushColor;
         }
 
-        async function saveDrawingState() {
-            if (isRemoteUpdate) return;
-            const dataURL = drawCanvas.toDataURL();
-            await supabaseClient.from('drawings').delete().neq('id', 0);
-            await supabaseClient.from('drawings').insert([{ line_data: dataURL }]);
+        function drawLineLocally(x0, y0, x1, y1, color) {
+            drawCtx.save();
+            drawCtx.strokeStyle = color;
+            drawCtx.beginPath();
+            drawCtx.moveTo(x0, y0);
+            drawCtx.lineTo(x1, y1);
+            drawCtx.stroke();
+            drawCtx.restore();
         }
 
-        async function loadSavedDrawing() {
-            const { data } = await supabaseClient.from('drawings').select('*').limit(1).single();
-            if (data && data.line_data) {
-                const img = new Image();
-                img.onload = () => {
-                    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                    drawCtx.drawImage(img, 0, 0);
-                };
-                img.src = data.line_data;
+        async function sendSegmentToSupabase(x0, y0, x1, y1, color) {
+            await supabaseClient.from('drawings').insert([{
+                x0: x0,
+                y0: y0,
+                x1: x1,
+                y1: y1,
+                color: color
+            }]);
+        }
+
+        async function loadSavedDrawingLines() {
+            const { data } = await supabaseClient.from('drawings').select('*').order('id', { ascending: true });
+            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            if (data && data.length > 0) {
+                data.forEach(row => {
+                    if (row.x0 !== null && row.x1 !== null) {
+                        drawLineLocally(row.x0, row.y0, row.x1, row.y1, row.color || '#f5d0dc');
+                    }
+                });
             }
         }
 
         function subscribeToDrawing() {
             supabaseClient
                 .channel('public:drawings')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'drawings' }, payload => {
-                    if (payload.new && payload.new.line_data) {
-                        isRemoteUpdate = true;
-                        const img = new Image();
-                        img.onload = () => {
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
+                    const row = payload.new;
+                    if (row && row.x0 !== null) {
+                        // إذا كانت الإحداثيات قيمتها -1 يعني هذا أمر مسح الشاشة
+                        if (row.x0 === -1) {
                             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                            drawCtx.drawImage(img, 0, 0);
-                            isRemoteUpdate = false;
-                        };
-                        img.src = payload.new.line_data;
+                        } else {
+                            drawLineLocally(row.x0, row.y0, row.x1, row.y1, row.color || '#f5d0dc');
+                        }
                     }
                 })
                 .subscribe();
@@ -636,7 +649,8 @@
 
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-            await supabaseClient.from('drawings').delete().neq('id', 0);
+            // إرسال إشارة مسح للسيرفر
+            await supabaseClient.from('drawings').insert([{ x0: -1, y0: -1, x1: -1, y1: -1, color: '#000000' }]);
         }
 
         function getMousePos(e) {
@@ -665,22 +679,16 @@
         drawCanvas.addEventListener("mousemove", (e) => {
             if (!isDrawing) return;
             const pos = getMousePos(e);
-            drawCtx.beginPath();
-            drawCtx.moveTo(lastX, lastY);
-            drawCtx.lineTo(pos.x, pos.y);
-            drawCtx.stroke();
+            
+            drawLineLocally(lastX, lastY, pos.x, pos.y, brushColor);
+            sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
+            
             lastX = pos.x;
             lastY = pos.y;
-            
-            // تحديث الرسم أول بأول أثناء التحريك (كلما تم رسم خط يتم حفظه سحابياً مباشرة لتراه الطرف الآخر)
-            saveDrawingState();
         });
 
         window.addEventListener("mouseup", () => {
-            if (isDrawing) {
-                isDrawing = false;
-                saveDrawingState();
-            }
+            isDrawing = false;
         });
 
         drawCanvas.addEventListener("touchstart", (e) => {
@@ -694,22 +702,17 @@
         drawCanvas.addEventListener("touchmove", (e) => {
             if (!isDrawing) return;
             const pos = getTouchPos(e);
-            drawCtx.beginPath();
-            drawCtx.moveTo(lastX, lastY);
-            drawCtx.lineTo(pos.x, pos.y);
-            drawCtx.stroke();
+            
+            drawLineLocally(lastX, lastY, pos.x, pos.y, brushColor);
+            sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
+            
             lastX = pos.x;
             lastY = pos.y;
             e.preventDefault();
-            
-            saveDrawingState();
         });
 
         window.addEventListener("touchend", () => {
-            if (isDrawing) {
-                isDrawing = false;
-                saveDrawingState();
-            }
+            isDrawing = false;
         });
 
         function updateCounter() {
