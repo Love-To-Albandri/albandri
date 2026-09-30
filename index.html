@@ -20,6 +20,47 @@
             text-align: center;
         }
 
+        /* PASSWORD GATE LOCK SCREEN */
+        #lockScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #160b10, #351923, #160b10);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .lock-card {
+            max-width: 400px;
+            width: 90%;
+            padding: 40px 30px;
+            border: 1px solid #8c4a5f;
+            border-radius: 25px;
+            background: rgba(53, 25, 35, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .lock-card h2 {
+            font-size: 28px;
+            color: #f5d0dc;
+            margin-bottom: 10px;
+        }
+
+        .lock-card p {
+            color: #e8cfd7;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* MAIN CONTENT HIDDEN INITIALLY */
+        #mainContent {
+            display: none;
+        }
+
         /* OPENING PAGE */
         .home {
             min-height: 100vh;
@@ -372,134 +413,162 @@
 
 <body>
 
-    <!-- AUDIO -->
-    <audio id="ourSong" loop>
-        <source src="oursong.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- OPENING PAGE -->
-    <section class="home">
-        <div class="home-content">
-            <h1>For Albandari, with love ♡</h1>
-            <p class="subtitle">Just because you mean more to me than you know.</p>
-            <button onclick="openStory()">Open ♡</button>
-        </div>
-    </section>
-
-    <!-- OUR STORY -->
-    <section class="story" id="story">
-        <h1 class="story-title">Our Story ♡</h1>
-        <p class="story-intro">Albandari, somehow, out of all the people in the world, I found you.</p>
-
-        <!-- FIRST DATE -->
-        <div class="moment">
-            <div class="date">01 • 12 • 2023</div>
-            <h2>The day we met. ♡</h2>
-            <p>The day you walked into my life. I had no idea you'd become this important to me.</p>
-        </div>
-
-        <!-- SECOND DATE -->
-        <div class="moment">
-            <div class="date">27 • 01 • 2024</div>
-            <h2>The day the feeling became mutual. ♡</h2>
-            <p>The day I found out your heart felt the same way mine did.</p>
-        </div>
-    </section>
-
-    <!-- THOUGHTS SECTION -->
-    <section class="thoughts-section">
-        <h1 style="font-size: 38px; color: #f5d0dc; margin-bottom: 40px;">Thoughts ♡</h1>
-        
-        <div class="thought-card">
-            <p>"Out of all the paths and all the faces in this vast world, my heart recognized yours instantly, as if it had known you in a lifetime before this one."</p>
-        </div>
-
-        <div class="thought-card">
-            <p>"With you, I stopped counting the days and started counting the moments that truly mattered. You gave a new definition to what it means to care for someone deeply."</p>
-        </div>
-    </section>
-
-    <!-- CONFESSION SECTION -->
-    <section class="confession-section">
-        <div class="confession-card">
-            <h2>That Moment... ♡</h2>
-            <p>
-                I remember that moment clearly.. the moment our hearts spoke before our words, and I knew my feelings weren't unreciprocated.
-            </p>
-            <p>
-                Since that day, I've realized completely that you are not just someone who entered my life, but an essential part of my days, happiness, and every detail of my soul.
-            </p>
-            <p class="subtitle" style="margin-bottom: 0;">
-                "Beside you, I realized that some days illuminate an entire lifetime.." ♡
-            </p>
-        </div>
-    </section>
-
-    <!-- COMFORT SECTION -->
-    <section class="comfort-section">
-        <div class="comfort-card">
-            <h2>For Tough Days... ♡</h2>
-            <p>
-                To Albandari.. Days pass, and whatever difficulty has passed will be followed by ease and near relief. Always remain as strong as I have known you, and look forward to whatever brings peace to your mind..
-            </p>
-        </div>
-    </section>
-
-    <!-- GAME SECTION -->
-    <section class="game-section">
-        <div class="game-card">
-            <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Catch the Hearts ♡</h2>
-            <p class="small" style="margin-bottom: 15px;">Click or tap on the falling hearts to collect them!</p>
-            <div style="font-size: 18px; color: #e8cfd7; margin-bottom: 10px;">Score: <span id="scoreVal">0</span></div>
-            <canvas id="gameCanvas" width="340" height="320"></canvas>
+    <!-- PASSWORD GATE LOCK SCREEN -->
+    <div id="lockScreen">
+        <div class="lock-card">
+            <h2>Protected Space ♡</h2>
+            <p>Please enter the secret password to enter.</p>
+            <input type="password" id="sitePasswordInput" class="pin-input" placeholder="Enter password">
             <br>
-            <button onclick="startGame()" style="padding: 10px 25px; font-size: 15px;">Start Game ♡</button>
+            <button onclick="unlockSite()" style="padding: 10px 25px; font-size: 15px;">Enter ♡</button>
         </div>
-    </section>
+    </div>
 
-    <!-- MESSAGE BOX SECTION -->
-    <section class="message-section">
-        <div class="message-card">
-            <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
-            <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here for everyone.</p>
-            
-            <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
-            <br>
-            <button onclick="saveMessageToCloud()" id="saveBtn">Save Note ♡</button>
-            
-            <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
+    <!-- MAIN CONTENT (HIDDEN UNTIL UNLOCKED) -->
+    <div id="mainContent">
 
-            <!-- SECURE MESSAGES BOX -->
-            <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
-            <p class="small" style="margin-bottom: 15px;">Enter the secret password to unlock and read the messages.</p>
-            
-            <div id="pinArea">
-                <input type="password" id="pinInput" class="pin-input" placeholder="Enter password">
-                <br>
-                <button onclick="unlockMessages()" style="padding: 10px 25px; font-size: 15px;">Unlock ♡</button>
+        <!-- AUDIO -->
+        <audio id="ourSong" loop>
+            <source src="oursong.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- OPENING PAGE -->
+        <section class="home">
+            <div class="home-content">
+                <h1>For Albandari, with love ♡</h1>
+                <p class="subtitle">Just because you mean more to me than you know.</p>
+                <button onclick="openStory()">Open ♡</button>
+            </div>
+        </section>
+
+        <!-- OUR STORY -->
+        <section class="story" id="story">
+            <h1 class="story-title">Our Story ♡</h1>
+            <p class="story-intro">Albandari, somehow, out of all the people in the world, I found you.</p>
+
+            <!-- FIRST DATE -->
+            <div class="moment">
+                <div class="date">01 • 12 • 2023</div>
+                <h2>The day we met. ♡</h2>
+                <p>The day you walked into my life. I had no idea you'd become this important to me.</p>
             </div>
 
-            <div id="messagesContainer" style="margin-top: 25px; display: none;"></div>
-        </div>
-    </section>
+            <!-- SECOND DATE -->
+            <div class="moment">
+                <div class="date">27 • 01 • 2024</div>
+                <h2>The day the feeling became mutual. ♡</h2>
+                <p>The day I found out your heart felt the same way mine did.</p>
+            </div>
+        </section>
 
-    <!-- LIVE COUNTER -->
-    <section class="counter-section">
-        <h1>Since We Met ♡</h1>
-        <p class="small">Since December 1, 2023 at 2:30 AM</p>
-        <div id="counter"></div>
-    </section>
+        <!-- THOUGHTS SECTION -->
+        <section class="thoughts-section">
+            <h1 style="font-size: 38px; color: #f5d0dc; margin-bottom: 40px;">Thoughts ♡</h1>
+            
+            <div class="thought-card">
+                <p>"Out of all the paths and all the faces in this vast world, my heart recognized yours instantly, as if it had known you in a lifetime before this one."</p>
+            </div>
 
-    <!-- MUSIC CONTROL -->
-    <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
+            <div class="thought-card">
+                <p>"With you, I stopped counting the days and started counting the moments that truly mattered. You gave a new definition to what it means to care for someone deeply."</p>
+            </div>
+        </section>
+
+        <!-- CONFESSION SECTION -->
+        <section class="confession-section">
+            <div class="confession-card">
+                <h2>That Moment... ♡</h2>
+                <p>
+                    I remember that moment clearly.. the moment our hearts spoke before our words, and I knew my feelings weren't unreciprocated.
+                </p>
+                <p>
+                    Since that day, I've realized completely that you are not just someone who entered my life, but an essential part of my days, happiness, and every detail of my soul.
+                </p>
+                <p class="subtitle" style="margin-bottom: 0;">
+                    "Beside you, I realized that some days illuminate an entire lifetime.." ♡
+                </p>
+            </div>
+        </section>
+
+        <!-- COMFORT SECTION -->
+        <section class="comfort-section">
+            <div class="comfort-card">
+                <h2>For Tough Days... ♡</h2>
+                <p>
+                    To Albandari.. Days pass, and whatever difficulty has passed will be followed by ease and near relief. Always remain as strong as I have known you, and look forward to whatever brings peace to your mind..
+                </p>
+            </div>
+        </section>
+
+        <!-- GAME SECTION -->
+        <section class="game-section">
+            <div class="game-card">
+                <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Catch the Hearts ♡</h2>
+                <p class="small" style="margin-bottom: 15px;">Click or tap on the falling hearts to collect them!</p>
+                <div style="font-size: 18px; color: #e8cfd7; margin-bottom: 10px;">Score: <span id="scoreVal">0</span></div>
+                <canvas id="gameCanvas" width="340" height="320"></canvas>
+                <br>
+                <button onclick="startGame()" style="padding: 10px 25px; font-size: 15px;">Start Game ♡</button>
+            </div>
+        </section>
+
+        <!-- MESSAGE BOX SECTION -->
+        <section class="message-section">
+            <div class="message-card">
+                <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
+                <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here for everyone.</p>
+                
+                <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
+                <br>
+                <button onclick="saveMessageToCloud()" id="saveBtn">Save Note ♡</button>
+                
+                <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
+
+                <!-- SECURE MESSAGES BOX -->
+                <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
+                <p class="small" style="margin-bottom: 15px;">Enter the secret password to unlock and read the messages.</p>
+                
+                <div id="pinArea">
+                    <input type="password" id="pinInput" class="pin-input" placeholder="Enter password">
+                    <br>
+                    <button onclick="unlockMessages()" style="padding: 10px 25px; font-size: 15px;">Unlock ♡</button>
+                </div>
+
+                <div id="messagesContainer" style="margin-top: 25px; display: none;"></div>
+            </div>
+        </section>
+
+        <!-- LIVE COUNTER -->
+        <section class="counter-section">
+            <h1>Since We Met ♡</h1>
+            <p class="small">Since December 1, 2023 at 2:30 AM</p>
+            <div id="counter"></div>
+        </section>
+
+        <!-- MUSIC CONTROL -->
+        <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
+
+    </div>
 
     <script>
         // بيانات الربط الخاصة بك في JSONBin
         const BIN_ID = "6abc788affd5d160533d9176";
         const API_KEY = "$2a$10$936tuj8.0jK9AQMwBSMGi02nu6oZjch9aCaJsXEsJXevfOJGBf5YRy";
         
-        // كلمة المرور المطلوبة
+        // كلمة المرور المطلوبة لفتح الموقع ولفتح صندوق الرسائل
         const SECRET_PIN = "i love you"; 
+
+        // فتح الموقع بكلمة المرور
+        function unlockSite() {
+            const entered = document.getElementById("sitePasswordInput").value.trim();
+            if (entered === SECRET_PIN) {
+                document.getElementById("lockScreen").style.display = "none";
+                document.getElementById("mainContent").style.display = "block";
+            } else {
+                alert("Incorrect password, please try again ♡");
+                document.getElementById("sitePasswordInput").value = "";
+            }
+        }
 
         function openStory() {
             const song = document.getElementById("ourSong");
@@ -634,7 +703,7 @@
                 const messages = data.record || [];
                 container.innerHTML = "";
                 
-                if (messages.length > 0) {
+                if (Array.isArray(messages) && messages.length > 0) {
                     messages.forEach((msg) => {
                         const box = document.createElement("div");
                         box.className = "saved-box";
@@ -669,14 +738,18 @@
             })
             .then(response => response.json())
             .then(data => {
-                let currentMessages = data.record || [];
+                let currentMessages = data.record;
+                if (!Array.isArray(currentMessages)) {
+                    currentMessages = [];
+                }
                 currentMessages.push(noteText);
 
                 return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-Master-Key": API_KEY
+                        "X-Master-Key": API_KEY,
+                        "X-Bin-Versioning": "false"
                     },
                     body: JSON.stringify(currentMessages)
                 });
@@ -691,12 +764,14 @@
                         loadMessages();
                     }
                 } else {
+                    response.text().then(text => console.log("Server error details:", text));
                     alert("Something went wrong, please try again.");
                     saveBtn.innerText = "Save Note ♡";
                     saveBtn.disabled = false;
                 }
             })
             .catch(error => {
+                console.log("Connection error:", error);
                 alert("Error connecting. Please check your connection.");
                 saveBtn.innerText = "Save Note ♡";
                 saveBtn.disabled = false;
