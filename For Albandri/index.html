@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Albandari ♡</title>
 
-    <!-- استدعاء مكتبة Supabase للاتصال بقاعدة البيانات السحابية -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -23,7 +22,6 @@
             text-align: center;
         }
 
-        /* PASSWORD GATE LOCK SCREEN */
         #lockScreen {
             position: fixed;
             top: 0;
@@ -181,10 +179,10 @@
             align-items: center;
         }
 
-        /* تنسيق صندوق المحادثة */
+        /* تنسيق صندوق المحادثة والتاريخ والوقت */
         .chat-box {
             width: 100%;
-            height: 400px;
+            height: 420px;
             background: #12070c;
             border: 1px solid #8c4a5f;
             border-radius: 15px;
@@ -192,19 +190,48 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 20px;
             text-align: left;
             direction: ltr;
         }
 
+        .chat-date-divider {
+            text-align: center;
+            color: #aa7b89;
+            font-size: 13px;
+            margin: 15px 0 10px 0;
+            position: relative;
+            width: 100%;
+        }
+
+        .chat-date-divider span {
+            background: #12070c;
+            padding: 0 12px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .chat-date-divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: #4a2431;
+            z-index: 0;
+        }
+
         .chat-message {
             max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 15px;
+            padding: 10px 14px;
+            border-radius: 14px;
             font-size: 15px;
             line-height: 1.5;
             word-break: break-word;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-message.sent {
@@ -221,6 +248,16 @@
             align-self: flex-start;
             border: 1px solid #572a39;
             border-bottom-left-radius: 3px;
+        }
+
+        .chat-msg-text {
+            margin-bottom: 4px;
+        }
+
+        .chat-msg-time {
+            font-size: 10px;
+            color: #aa7b89;
+            align-self: flex-end;
         }
 
         .chat-input-area {
@@ -497,7 +534,6 @@
             </div>
         </section>
 
-        <!-- قسم صفحة الدردشة المباشرة الجديدة -->
         <section class="chat-section">
             <div class="chat-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Live Chat ♡</h2>
@@ -531,7 +567,6 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const SECRET_PIN = "2023"; 
 
-        // تحديد معرف فريد لهذا الجهاز/المتصفح لتمييز الرسائل المرسلة عن المستلمة في الشات
         let myDeviceUUID = localStorage.getItem("my_device_uuid");
         if (!myDeviceUUID) {
             myDeviceUUID = 'user_' + Math.random().toString(36.2, 9);
@@ -640,20 +675,23 @@
             }
         }
 
-        // دوال نظام الدردشة المباشرة (Live Chat)
+        // متغير لتتبع آخر تاريخ تم عرضه لتجنب تكرار فواصل التواريخ
+        let lastDisplayedDate = "";
+
         async function loadChatMessages() {
             const chatContainer = document.getElementById("chatContainer");
+            lastDisplayedDate = ""; // إعادة ضبط عند التحميل الأولي
             try {
                 const { data, error } = await supabaseClient
                     .from('chats')
                     .select('*')
-                    .order('id', { ascending: true });
+                    .order('created_at', { ascending: true });
 
                 if (error) return;
                 chatContainer.innerHTML = "";
                 if (data && data.length > 0) {
                     data.forEach((row) => {
-                        appendChatToDOM(row.content, row.sender_id);
+                        appendChatToDOM(row.content, row.sender_id, row.created_at);
                     });
                 } else {
                     chatContainer.innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">No messages in chat yet. Start talking ♡</div>`;
@@ -661,14 +699,41 @@
             } catch (err) {}
         }
 
-        function appendChatToDOM(content, senderId) {
+        function appendChatToDOM(content, senderId, createdAt) {
             const chatContainer = document.getElementById("chatContainer");
             const noChat = document.getElementById("noChatText");
             if (noChat) noChat.remove();
 
+            // معالجة التاريخ والوقت
+            const messageDate = createdAt ? new Date(createdAt) : new Date();
+            
+            // استخراج التاريخ بتنسيق بسيط (مثال: 30 Sep 2026 أو تاريخ المحلي)
+            const dateString = messageDate.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            // التحقق مما إذا كان يوم جديد لإدراج فاصل تاريخ
+            if (dateString !== lastDisplayedDate) {
+                lastDisplayedDate = dateString;
+                
+                const divider = document.createElement("div");
+                divider.className = "chat-date-divider";
+                divider.innerHTML = `<span>${dateString}</span>`;
+                chatContainer.appendChild(divider);
+            }
+
+            // استخراج الوقت (الساعات والدقائق بصيغة 12 ساعة مع AM/PM أو حسب الرغبة)
+            const timeString = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
             const msgDiv = document.createElement("div");
             msgDiv.className = "chat-message " + (senderId === myDeviceUUID ? "sent" : "received");
-            msgDiv.innerText = content;
+            
+            msgDiv.innerHTML = `
+                <div class="chat-msg-text">${content}</div>
+                <div class="chat-msg-time">${timeString}</div>
+            `;
 
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -680,7 +745,7 @@
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, payload => {
                     const row = payload.new;
                     if (row && row.content) {
-                        appendChatToDOM(row.content, row.sender_id);
+                        appendChatToDOM(row.content, row.sender_id, row.created_at);
                     }
                 })
                 .subscribe();
@@ -851,9 +916,12 @@
                 .subscribe();
         }
 
+        // تم إصلاح مسح الرسم بحيث يحذف البيانات نهائياً من قاعدة البيانات ولا تعود عند التحديث
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-            await supabaseClient.from('drawings').insert([{ line_data: "CLEAR" }]);
+            try {
+                await supabaseClient.from('drawings').delete().neq('id', 0);
+            } catch (err) {}
         }
 
         function getMousePos(e) {
@@ -921,6 +989,7 @@
             drawCtx.stroke();
             drawCtx.restore();
 
+            sendSegmentDateOrLine = true;
             sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
             
             lastX = pos.x;
