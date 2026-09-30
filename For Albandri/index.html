@@ -280,6 +280,26 @@
             border-color: #d9a6b6;
         }
 
+        /* PIN INPUT STYLES */
+        .pin-input {
+            width: 100%;
+            max-width: 280px;
+            height: 45px;
+            background: #1e0f17;
+            border: 1px solid #8c4a5f;
+            border-radius: 10px;
+            padding: 0 15px;
+            color: #fff7f9;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .pin-input:focus {
+            border-color: #d9a6b6;
+        }
+
         .saved-box {
             margin-top: 20px;
             padding: 20px;
@@ -334,19 +354,11 @@
             color: white;
         }
 
-        /* ANIMATION */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* MOBILE */
         @media (max-width: 600px) {
             h1 { font-size: 34px; }
             .story-title { font-size: 34px; }
@@ -455,9 +467,19 @@
             <br>
             <button onclick="saveMessageToCloud()" id="saveBtn">Save Note ♡</button>
             
-            <div id="messagesContainer" style="margin-top: 25px;">
-                <p class="small" style="color: #aa7b89;">Loading messages...</p>
+            <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
+
+            <!-- SECURE MESSAGES BOX -->
+            <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
+            <p class="small" style="margin-bottom: 15px;">Enter the secret password to unlock and read the messages.</p>
+            
+            <div id="pinArea">
+                <input type="password" id="pinInput" class="pin-input" placeholder="Enter password">
+                <br>
+                <button onclick="unlockMessages()" style="padding: 10px 25px; font-size: 15px;">Unlock ♡</button>
             </div>
+
+            <div id="messagesContainer" style="margin-top: 25px; display: none;"></div>
         </div>
     </section>
 
@@ -472,9 +494,12 @@
     <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
 
     <script>
-        // ضع هنا بيانات حسابك في JSONBin
-        const BIN_ID = "YOUR_BIN_ID_HERE";
-        const API_KEY = "YOUR_MASTER_KEY_HERE";
+        // بيانات الربط الخاصة بك في JSONBin
+        const BIN_ID = "6abc788affd5d160533d9176";
+        const API_KEY = "$2a$10$936tuj8.0jK9AQMwBSMGi02nu6oZjch9aCaJsXEsJXevfOJGBf5YRy";
+        
+        // كلمة المرور المطلوبة
+        const SECRET_PIN = "i love you"; 
 
         function openStory() {
             const song = document.getElementById("ourSong");
@@ -580,8 +605,25 @@
             handleInteraction(e.clientX, e.clientY);
         }, { passive: false });
 
+        // UNLOCK MESSAGES WITH PASSWORD
+        function unlockMessages() {
+            const enteredPin = document.getElementById("pinInput").value.trim();
+            if (enteredPin === SECRET_PIN) {
+                document.getElementById("pinArea").style.display = "none";
+                const container = document.getElementById("messagesContainer");
+                container.style.display = "block";
+                loadMessages();
+            } else {
+                alert("Incorrect password, please try again ♡");
+                document.getElementById("pinInput").value = "";
+            }
+        }
+
         // CLOUD MESSAGES LOGIC
         function loadMessages() {
+            const container = document.getElementById("messagesContainer");
+            container.innerHTML = `<p class="small" style="color: #aa7b89;">Loading messages...</p>`;
+
             fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: {
                     "X-Master-Key": API_KEY
@@ -590,7 +632,6 @@
             .then(response => response.json())
             .then(data => {
                 const messages = data.record || [];
-                const container = document.getElementById("messagesContainer");
                 container.innerHTML = "";
                 
                 if (messages.length > 0) {
@@ -606,6 +647,7 @@
             })
             .catch(error => {
                 console.log("Error loading messages:", error);
+                container.innerHTML = `<p class="small" style="color: #aa7b89;">Failed to load messages.</p>`;
             });
         }
 
@@ -644,7 +686,10 @@
                     document.getElementById("userNoteInput").value = "";
                     saveBtn.innerText = "Save Note ♡";
                     saveBtn.disabled = false;
-                    loadMessages();
+                    alert("Note saved successfully! ♡");
+                    if (document.getElementById("messagesContainer").style.display === "block") {
+                        loadMessages();
+                    }
                 } else {
                     alert("Something went wrong, please try again.");
                     saveBtn.innerText = "Save Note ♡";
@@ -657,10 +702,6 @@
                 saveBtn.disabled = false;
             });
         }
-
-        window.onload = function() {
-            loadMessages();
-        };
 
         function updateCounter() {
             const startDate = new Date("2023-12-01T02:30:00");
