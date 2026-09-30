@@ -213,13 +213,15 @@
             touch-action: none;
         }
 
+        /* إصلاح حجم اللعبة وتمركزها بشكل متجاوب بالكامل */
         #gameCanvas {
-            width: 340px;
-            height: 320px;
+            width: 100%;
+            max-width: 380px;
+            height: 340px;
             cursor: pointer;
         }
 
-        /* شاشة رسم بحجم أكبر وأوضح */
+        /* شاشة رسم بحجم أكبر وأوضح ومتجاوبة */
         #drawingCanvas {
             width: 100%;
             max-width: 800px;
@@ -569,21 +571,34 @@
             requestAnimationFrame(updateGame);
         }
 
-        canvas.addEventListener("click", function(e) {
+        // دالة موحدة لدقة الضغط والنقر في الجوال والكمبيوتر للعبة
+        function handleGameInteraction(clientX, clientY) {
             if (!isPlaying) return;
             const rect = canvas.getBoundingClientRect();
-            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const clickX = (clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (clientY - rect.top) * (canvas.height / rect.height);
 
             for (let i = hearts.length - 1; i >= 0; i--) {
-                if (Math.hypot(clickX - hearts[i].x, clickY - hearts[i].y) < 25) {
+                // تكبير مساحة التلامس قليلاً (35 بكسل) لضمان سهولة الضغط بالإصبع
+                if (Math.hypot(clickX - hearts[i].x, clickY - hearts[i].y) < 35) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
                     hearts.splice(i, 1);
                     break;
                 }
             }
+        }
+
+        canvas.addEventListener("click", function(e) {
+            handleGameInteraction(e.clientX, e.clientY);
         });
+
+        canvas.addEventListener("touchstart", function(e) {
+            if (e.touches.length > 0) {
+                handleGameInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+            e.preventDefault();
+        }, { passive: false });
 
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
@@ -709,7 +724,7 @@
             lastX = pos.x;
             lastY = pos.y;
             e.preventDefault();
-        });
+        }, { passive: false });
 
         drawCanvas.addEventListener("touchmove", (e) => {
             if (!isDrawing) return;
@@ -728,7 +743,7 @@
             lastX = pos.x;
             lastY = pos.y;
             e.preventDefault();
-        });
+        }, { passive: false });
 
         window.addEventListener("touchend", () => {
             isDrawing = false;
