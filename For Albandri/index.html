@@ -167,7 +167,7 @@
         .counter-section { background: #10070b; min-height: 70vh; }
 
         .thought-card, .confession-card, .comfort-card, .game-card, .drawing-card, .message-card {
-            max-width: 750px;
+            max-width: 900px;
             width: 100%;
             margin: 25px auto;
             padding: 40px;
@@ -175,6 +175,9 @@
             border-radius: 20px;
             background: rgba(53, 25, 35, 0.35);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .thought-card p {
@@ -198,6 +201,7 @@
             font-size: 18px;
             line-height: 2;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         #gameCanvas, #drawingCanvas {
@@ -215,15 +219,17 @@
             cursor: pointer;
         }
 
+        /* شاشة رسم بحجم أكبر وأوضح */
         #drawingCanvas {
             width: 100%;
-            max-width: 650px;
-            height: 450px;
+            max-width: 800px;
+            height: 520px;
             cursor: crosshair;
         }
 
         textarea {
             width: 100%;
+            max-width: 700px;
             height: 120px;
             background: #1e0f17;
             border: 1px solid #8c4a5f;
@@ -267,6 +273,8 @@
             word-break: break-word;
             text-align: left;
             direction: ltr;
+            width: 100%;
+            max-width: 700px;
         }
 
         #counter {
@@ -391,7 +399,7 @@
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
                 <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on her screen live! ♡</p>
                 
-                <canvas id="drawingCanvas" width="700" height="450"></canvas>
+                <canvas id="drawingCanvas" width="800" height="520"></canvas>
                 
                 <div style="display: flex; justify-content: center; gap: 12px; margin-top: 15px; align-items: center;">
                     <button onclick="setBrushColor('#f5d0dc')" style="background: #f5d0dc; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="Pink"></button>
@@ -411,10 +419,10 @@
                 <br>
                 <button onclick="saveMessageToSupabase()" id="saveBtn">Save Note ♡</button>
                 
-                <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
+                <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0; width: 100%;">
 
                 <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
-                <div id="messagesContainer" style="margin-top: 15px;">Loading messages...</div>
+                <div id="messagesContainer" style="margin-top: 15px; width: 100%; display: flex; flex-direction: column; align-items: center;">Loading messages...</div>
             </div>
         </section>
 
@@ -577,7 +585,6 @@
             }
         });
 
-        // نظام الرسم المتوافق مع جدول line_data
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
         let isDrawing = false;
@@ -678,7 +685,6 @@
             if (!isDrawing) return;
             const pos = getMousePos(e);
             
-            // الرسم المحلي الفوري
             drawCtx.save();
             drawCtx.strokeStyle = brushColor;
             drawCtx.beginPath();
@@ -687,7 +693,6 @@
             drawCtx.stroke();
             drawCtx.restore();
 
-            // الإرسال لقاعدة البيانات
             sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
             
             lastX = pos.x;
@@ -721,7 +726,6 @@
             sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
             
             lastX = pos.x;
-            lastY, lastY = pos.y; // تم التصحيح هنا
             lastY = pos.y;
             e.preventDefault();
         });
