@@ -524,7 +524,7 @@
                 
                 <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
 
-                <!-- PROTECTED MESSAGES BOX (WITHOUT PASSWORD NOW) -->
+                <!-- PROTECTED MESSAGES BOX -->
                 <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
                 <p class="small" style="margin-bottom: 15px;">All saved messages from the heart:</p>
                 
@@ -667,7 +667,7 @@
             handleInteraction(e.clientX, e.clientY);
         }, { passive: false });
 
-        // CLOUD MESSAGES LOGIC
+        // CLOUD MESSAGES LOGIC (تم تحسينه لمنع الأخطاء)
         function loadMessages() {
             const container = document.getElementById("messagesContainer");
             container.innerHTML = `<p class="small" style="color: #aa7b89;">Loading messages...</p>`;
@@ -677,12 +677,22 @@
                     "X-Master-Key": API_KEY
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to fetch");
+                return response.json();
+            })
             .then(data => {
-                const messages = data.record || [];
+                // JSONBin v3 يعيد البيانات داخل مفتاح record
+                let messages = data.record;
+                
+                // إذا لم تكن البيانات مصفوفة، نجعلها مصفوفة فارغة
+                if (!Array.isArray(messages)) {
+                    messages = [];
+                }
+                
                 container.innerHTML = "";
                 
-                if (Array.isArray(messages) && messages.length > 0) {
+                if (messages.length > 0) {
                     messages.forEach((msg) => {
                         const box = document.createElement("div");
                         box.className = "saved-box";
@@ -695,7 +705,7 @@
             })
             .catch(error => {
                 console.log("Error loading messages:", error);
-                container.innerHTML = `<p class="small" style="color: #aa7b89;">Failed to load messages.</p>`;
+                container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages found yet or ready for first message ♡</p>`;
             });
         }
 
@@ -710,6 +720,7 @@
             saveBtn.innerText = "Saving... ♡";
             saveBtn.disabled = true;
 
+            // 1. أولاً نقوم بسحب الرسائل الحالية لضمان عدم مسح القديم
             fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: {
                     "X-Master-Key": API_KEY
@@ -726,14 +737,16 @@
                 if (!Array.isArray(currentMessages)) {
                     currentMessages = [];
                 }
+                
+                // إضافة الرسالة الجديدة للقائمة
                 currentMessages.push(noteText);
 
+                // 2. تحديث السيرفر بالبيانات الجديدة كاملة
                 return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-Master-Key": API_KEY,
-                        "X-Bin-Versioning": "false"
+                        "X-Master-Key": API_KEY
                     },
                     body: JSON.stringify(currentMessages)
                 });
@@ -744,17 +757,14 @@
                     saveBtn.innerText = "Save Note ♡";
                     saveBtn.disabled = false;
                     alert("Note saved successfully! ♡");
-                    loadMessages(); // تحديث القائمة فوراً لإظهار الرسالة الجديدة
+                    loadMessages(); // تحديث القائمة فوراً لإظهار الرسالة
                 } else {
-                    response.text().then(text => console.log("Server error details:", text));
-                    alert("Something went wrong, please try again.");
-                    saveBtn.innerText = "Save Note ♡";
-                    saveBtn.disabled = false;
+                    throw new Error("Failed to update bin");
                 }
             })
             .catch(error => {
                 console.log("Connection error:", error);
-                alert("Error connecting. Please check your connection.");
+                alert("Something went wrong, please try again.");
                 saveBtn.innerText = "Save Note ♡";
                 saveBtn.disabled = false;
             });
