@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Albandari ♡</title>
 
+    <!-- استدعاء مكتبة Supabase للاتصال بقاعدة البيانات السحابية -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -56,12 +59,10 @@
             margin-bottom: 25px;
         }
 
-        /* MAIN CONTENT HIDDEN INITIALLY */
         #mainContent {
             display: none;
         }
 
-        /* OPENING PAGE */
         .home {
             min-height: 100vh;
             display: flex;
@@ -103,7 +104,6 @@
             transform: scale(1.07);
         }
 
-        /* OUR STORY */
         .story {
             min-height: 100vh;
             padding: 100px 20px;
@@ -120,7 +120,6 @@
             margin-bottom: 80px;
         }
 
-        /* MOMENTS */
         .moment {
             max-width: 600px;
             margin: 80px auto;
@@ -150,18 +149,23 @@
             line-height: 1.8;
         }
 
-        /* THOUGHTS SECTION */
-        .thoughts-section {
+        .thoughts-section, .confession-section, .comfort-section, .game-section, .message-section, .counter-section {
             min-height: 100vh;
             padding: 100px 20px;
-            background: linear-gradient(#271119, #1c0e14);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
-        .thought-card {
+        .thoughts-section { background: linear-gradient(#271119, #1c0e14); }
+        .confession-section { background: linear-gradient(#1c0e14, #1a0d13); }
+        .comfort-section { background: linear-gradient(#1a0d13, #160b10); }
+        .game-section { background: linear-gradient(#160b10, #1f0d14); }
+        .message-section { background: #14090f; min-height: 70vh; }
+        .counter-section { background: #10070b; min-height: 70vh; }
+
+        .thought-card, .confession-card, .comfort-card, .game-card, .message-card {
             max-width: 650px;
             width: 100%;
             margin: 25px auto;
@@ -182,91 +186,17 @@
             text-align: center;
         }
 
-        /* CONFESSION SECTION */
-        .confession-section {
-            min-height: 100vh;
-            padding: 100px 20px;
-            background: linear-gradient(#1c0e14, #1a0d13);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .confession-card {
-            max-width: 700px;
-            padding: 50px 40px;
-            border: 1px solid #8c4a5f;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .confession-card h2 {
-            font-size: 36px;
-            color: #f5d0dc;
-            margin-bottom: 25px;
-        }
-
-        .confession-card p {
-            color: #f2e2e7;
-            font-size: 19px;
-            line-height: 2;
-            margin-bottom: 20px;
-        }
-
-        /* COMFORT SECTION */
-        .comfort-section {
-            min-height: 100vh;
-            padding: 100px 20px;
-            background: linear-gradient(#1a0d13, #160b10);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .comfort-card {
-            max-width: 700px;
-            padding: 50px 40px;
-            border: 1px solid #8c4a5f;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .comfort-card h2 {
+        .confession-card h2, .comfort-card h2 {
             font-size: 34px;
             color: #f5d0dc;
             margin-bottom: 25px;
         }
 
-        .comfort-card p {
+        .confession-card p, .comfort-card p {
             color: #f2e2e7;
             font-size: 18px;
             line-height: 2;
-            margin-bottom: 0;
-        }
-
-        /* GAME SECTION */
-        .game-section {
-            min-height: 100vh;
-            padding: 80px 20px;
-            background: linear-gradient(#160b10, #1f0d14);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .game-card {
-            max-width: 650px;
-            width: 100%;
-            padding: 30px;
-            border: 1px solid #6d3b4b;
-            border-radius: 25px;
-            background: rgba(53, 25, 35, 0.3);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
         }
 
         #gameCanvas {
@@ -280,26 +210,6 @@
             max-width: 100%;
             cursor: pointer;
             touch-action: none;
-        }
-
-        /* MESSAGE BOX SECTION */
-        .message-section {
-            padding: 100px 20px;
-            min-height: 70vh;
-            background: #14090f;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .message-card {
-            max-width: 600px;
-            width: 100%;
-            padding: 40px;
-            border: 1px solid #6d3b4b;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.02);
         }
 
         textarea {
@@ -317,11 +227,8 @@
             outline: none;
         }
 
-        textarea:focus {
-            border-color: #d9a6b6;
-        }
+        textarea:focus { border-color: #d9a6b6; }
 
-        /* PIN INPUT STYLES */
         .pin-input {
             width: 100%;
             max-width: 280px;
@@ -335,10 +242,6 @@
             text-align: center;
             outline: none;
             margin-bottom: 15px;
-        }
-
-        .pin-input:focus {
-            border-color: #d9a6b6;
         }
 
         .saved-box {
@@ -356,13 +259,6 @@
             direction: ltr;
         }
 
-        /* COUNTER */
-        .counter-section {
-            padding: 100px 20px;
-            min-height: 70vh;
-            background: #10070b;
-        }
-
         #counter {
             margin-top: 35px;
             font-size: 25px;
@@ -375,7 +271,6 @@
             font-size: 14px;
         }
 
-        /* MUSIC BUTTON */
         .music-button {
             position: fixed;
             bottom: 20px;
@@ -399,21 +294,11 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 34px; }
-            .story-title { font-size: 34px; }
-            .confession-card, .comfort-card { padding: 30px 20px; }
-            .confession-card h2, .comfort-card h2 { font-size: 26px; }
-            .confession-card p, .comfort-card p { font-size: 16px; }
-            #counter { font-size: 20px; }
-        }
     </style>
 </head>
 
 <body>
 
-    <!-- PASSWORD GATE LOCK SCREEN -->
     <div id="lockScreen">
         <div class="lock-card">
             <h2>Protected Space ♡</h2>
@@ -424,15 +309,12 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT (HIDDEN UNTIL UNLOCKED) -->
     <div id="mainContent">
 
-        <!-- AUDIO -->
         <audio id="ourSong" loop>
             <source src="oursong.mp3" type="audio/mpeg">
         </audio>
 
-        <!-- OPENING PAGE -->
         <section class="home">
             <div class="home-content">
                 <h1>For Albandari, with love ♡</h1>
@@ -441,19 +323,16 @@
             </div>
         </section>
 
-        <!-- OUR STORY -->
         <section class="story" id="story">
             <h1 class="story-title">Our Story ♡</h1>
             <p class="story-intro">Albandari, somehow, out of all the people in the world, I found you.</p>
 
-            <!-- FIRST DATE -->
             <div class="moment">
                 <div class="date">01 • 12 • 2023</div>
                 <h2>The day we met. ♡</h2>
                 <p>The day you walked into my life. I had no idea you'd become this important to me.</p>
             </div>
 
-            <!-- SECOND DATE -->
             <div class="moment">
                 <div class="date">27 • 01 • 2024</div>
                 <h2>The day the feeling became mutual. ♡</h2>
@@ -461,46 +340,31 @@
             </div>
         </section>
 
-        <!-- THOUGHTS SECTION -->
         <section class="thoughts-section">
             <h1 style="font-size: 38px; color: #f5d0dc; margin-bottom: 40px;">Thoughts ♡</h1>
-            
             <div class="thought-card">
                 <p>"Out of all the paths and all the faces in this vast world, my heart recognized yours instantly, as if it had known you in a lifetime before this one."</p>
             </div>
-
             <div class="thought-card">
                 <p>"With you, I stopped counting the days and started counting the moments that truly mattered. You gave a new definition to what it means to care for someone deeply."</p>
             </div>
         </section>
 
-        <!-- CONFESSION SECTION -->
         <section class="confession-section">
             <div class="confession-card">
                 <h2>That Moment... ♡</h2>
-                <p>
-                    I remember that moment clearly.. the moment our hearts spoke before our words, and I knew my feelings weren't unreciprocated.
-                </p>
-                <p>
-                    Since that day, I've realized completely that you are not just someone who entered my life, but an essential part of my days, happiness, and every detail of my soul.
-                </p>
-                <p class="subtitle" style="margin-bottom: 0;">
-                    "Beside you, I realized that some days illuminate an entire lifetime.." ♡
-                </p>
+                <p>I remember that moment clearly.. the moment our hearts spoke before our words, and I knew my feelings weren't unreciprocated.</p>
+                <p>Since that day, I've realized completely that you are not just someone who entered my life, but an essential part of my days, happiness, and every detail of my soul.</p>
             </div>
         </section>
 
-        <!-- COMFORT SECTION -->
         <section class="comfort-section">
             <div class="comfort-card">
                 <h2>For Tough Days... ♡</h2>
-                <p>
-                    To Albandari.. Days pass, and whatever difficulty has passed will be followed by ease and near relief. Always remain as strong as I have known you, and look forward to whatever brings peace to your mind..
-                </p>
+                <p>To Albandari.. Days pass, and whatever difficulty has passed will be followed by ease and near relief. Always remain as strong as I have known you...</p>
             </div>
         </section>
 
-        <!-- GAME SECTION -->
         <section class="game-section">
             <div class="game-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Catch the Hearts ♡</h2>
@@ -512,43 +376,39 @@
             </div>
         </section>
 
-        <!-- MESSAGE BOX SECTION -->
         <section class="message-section">
             <div class="message-card">
                 <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
-                <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here for everyone.</p>
+                <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will stay here forever.</p>
                 
                 <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
                 <br>
-                <button onclick="saveMessageToCloud()" id="saveBtn">Save Note ♡</button>
+                <button onclick="saveMessageToSupabase()" id="saveBtn">Save Note ♡</button>
                 
                 <hr style="border: 0; border-top: 1px solid #6d3b4b; margin: 35px 0;">
 
-                <!-- PROTECTED MESSAGES BOX -->
                 <h3 style="font-size: 20px; color: #f5d0dc; margin-bottom: 10px;">Protected Messages Box ♡</h3>
-                <p class="small" style="margin-bottom: 15px;">All saved messages from the heart:</p>
-                
-                <div id="messagesContainer" style="margin-top: 15px;"></div>
+                <div id="messagesContainer" style="margin-top: 15px;">Loading messages...</div>
             </div>
         </section>
 
-        <!-- LIVE COUNTER -->
         <section class="counter-section">
             <h1>Since We Met ♡</h1>
             <p class="small">Since December 1, 2023 at 2:30 AM</p>
             <div id="counter"></div>
         </section>
 
-        <!-- MUSIC CONTROL -->
-        <button class="music-button" onclick="toggleMusic()" title="Play/Pause Music">♫</button>
+        <button class="music-button" onclick="toggleMusic()">♫</button>
 
     </div>
 
     <script>
-        const BIN_ID = "6abc7c58ac6210605a03f7d4";
-        const API_KEY = "$2a$10$936tuj8.0jK9AQMwBSMGi02nu6oZjch9aCaJsXEsJXevfOJGBf5YRy";
+        // إعدادات اتصال Supabase السحابي
+        const SUPABASE_URL = "https://ymnuakhkbvdicbjfrzco.supabase.co";
+        const SUPABASE_KEY = "Sb_publishable_uMe9vGok4IAR8z9H01Nrig_6EIa17fp";
         
-        // كلمة المرور المطلوبة لدخول الموقع فقط
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const SECRET_PIN = "i love you"; 
 
         function unlockSite() {
@@ -556,7 +416,7 @@
             if (entered === SECRET_PIN) {
                 document.getElementById("lockScreen").style.display = "none";
                 document.getElementById("mainContent").style.display = "block";
-                loadMessages(); // تحميل الرسائل تلقائياً فور فتح الموقع
+                loadMessagesFromSupabase();
             } else {
                 alert("Incorrect password, please try again ♡");
                 document.getElementById("sitePasswordInput").value = "";
@@ -565,22 +425,80 @@
 
         function openStory() {
             const song = document.getElementById("ourSong");
-            song.play().catch(error => {
-                console.log("Audio play prevented:", error);
-            });
+            song.play().catch(error => console.log(error));
             document.getElementById("story").scrollIntoView({ behavior: "smooth" });
         }
 
         function toggleMusic() {
             const song = document.getElementById("ourSong");
-            if (song.paused) {
-                song.play();
-            } else {
-                song.pause();
+            if (song.paused) song.play();
+            else song.pause();
+        }
+
+        // تحميل الرسائل من قاعدة البيانات السحابية Supabase
+        async function loadMessagesFromSupabase() {
+            const container = document.getElementById("messagesContainer");
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('messages')
+                    .select('*')
+                    .order('id', { ascending: false });
+
+                if (error) {
+                    container.innerHTML = `<p class="small" style="color: #aa7b89;">Error loading messages.</p>`;
+                    return;
+                }
+
+                container.innerHTML = "";
+                if (data && data.length > 0) {
+                    data.forEach((row) => {
+                        const box = document.createElement("div");
+                        box.className = "saved-box";
+                        box.innerHTML = `"${row.content}"`;
+                        container.appendChild(box);
+                    });
+                } else {
+                    container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages yet. Be the first to write one ♡</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p class="small" style="color: #aa7b89;">Could not connect to database.</p>`;
             }
         }
 
-        // GAME LOGIC
+        // حفظ رسالة جديدة في قاعدة البيانات السحابية Supabase للأبد
+        async function saveMessageToSupabase() {
+            const noteText = document.getElementById("userNoteInput").value.trim();
+            if (noteText === "") {
+                alert("Please write something before saving ♡");
+                return;
+            }
+
+            const saveBtn = document.getElementById("saveBtn");
+            saveBtn.innerText = "Saving... ♡";
+            saveBtn.disabled = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('messages')
+                    .insert([{ content: noteText }]);
+
+                if (error) {
+                    alert("Error saving message. Make sure the table 'messages' and column 'content' exist in Supabase.");
+                } else {
+                    document.getElementById("userNoteInput").value = "";
+                    alert("Note saved successfully for ever! ♡");
+                    loadMessagesFromSupabase();
+                }
+            } catch (err) {
+                alert("Something went wrong.");
+            } finally {
+                saveBtn.innerText = "Save Note ♡";
+                saveBtn.disabled = false;
+            }
+        }
+
+        // لعبة القلوب
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         let score = 0;
@@ -614,7 +532,6 @@
             ctx.fillStyle = "#e5aabd";
             hearts.forEach((h, index) => {
                 h.y += h.speed;
-                
                 ctx.save();
                 ctx.translate(h.x, h.y);
                 ctx.beginPath();
@@ -627,159 +544,42 @@
                 ctx.fill();
                 ctx.restore();
 
-                if (h.y > canvas.height + 30) {
-                    hearts.splice(index, 1);
-                }
+                if (h.y > canvas.height + 30) hearts.splice(index, 1);
             });
 
             requestAnimationFrame(updateGame);
         }
 
-        function handleInteraction(clientX, clientY) {
+        canvas.addEventListener("click", function(e) {
             if (!isPlaying) return;
             const rect = canvas.getBoundingClientRect();
-            
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            const clickX = (clientX - rect.left) * scaleX;
-            const clickY = (clientY - rect.top) * scaleY;
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
 
             for (let i = hearts.length - 1; i >= 0; i--) {
-                let h = hearts[i];
-                let distance = Math.hypot(clickX - h.x, clickY - h.y);
-                
-                if (distance < 25) {
+                if (Math.hypot(clickX - hearts[i].x, clickY - hearts[i].y) < 25) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
                     hearts.splice(i, 1);
                     break;
                 }
             }
-        }
-
-        canvas.addEventListener("click", function(e) {
-            handleInteraction(e.clientX, e.clientY);
         });
-
-        canvas.addEventListener("pointerdown", function(e) {
-            e.preventDefault();
-            handleInteraction(e.clientX, e.clientY);
-        }, { passive: false });
-
-        // CLOUD MESSAGES LOGIC (معدل خصيصاً لتجاوز خطأ التحديث في JSONBin)
-        function loadMessages() {
-            const container = document.getElementById("messagesContainer");
-            container.innerHTML = `<p class="small" style="color: #aa7b89;">Loading messages...</p>`;
-
-            fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                headers: {
-                    "X-Master-Key": API_KEY
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                let messages = data.record;
-                if (!Array.isArray(messages)) {
-                    messages = [];
-                }
-                
-                container.innerHTML = "";
-                
-                if (messages.length > 0) {
-                    // عرض الرسائل من الأحدث للأقدم
-                    messages.slice().reverse().forEach((msg) => {
-                        const box = document.createElement("div");
-                        box.className = "saved-box";
-                        box.innerHTML = `"${msg}"`;
-                        container.appendChild(box);
-                    });
-                } else {
-                    container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages yet. Be the first to write one ♡</p>`;
-                }
-            })
-            .catch(error => {
-                console.log("Error loading messages:", error);
-                container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages found yet ♡</p>`;
-            });
-        }
-
-        function saveMessageToCloud() {
-            const noteText = document.getElementById("userNoteInput").value.trim();
-            if (noteText === "") {
-                alert("Please write something before saving ♡");
-                return;
-            }
-
-            const saveBtn = document.getElementById("saveBtn");
-            saveBtn.innerText = "Saving... ♡";
-            saveBtn.disabled = true;
-
-            // استخدام طريقة آمنة لسحب وإضافة الرسالة الجديدة دون الإضرار بهيكلة السيرفر
-            fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                headers: {
-                    "X-Master-Key": API_KEY
-                }
-            })
-            .then(response => response.json().catch(() => ({ record: [] })))
-            .then(data => {
-                let currentMessages = data.record;
-                if (!Array.isArray(currentMessages)) {
-                    currentMessages = [];
-                }
-                
-                currentMessages.push(noteText);
-
-                return fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-Master-Key": API_KEY
-                    },
-                    body: JSON.stringify(currentMessages)
-                });
-            })
-            .then(response => {
-                if (response.ok) {
-                    document.getElementById("userNoteInput").value = "";
-                    saveBtn.innerText = "Save Note ♡";
-                    saveBtn.disabled = false;
-                    alert("Note saved successfully! ♡");
-                    loadMessages(); 
-                } else {
-                    throw new Error("Update failed");
-                }
-            })
-            .catch(error => {
-                console.log("Connection error:", error);
-                // محاولة احتياطية بديلة في حال واجهت خطأ أمني من السيرفر
-                alert("Something went wrong, please try again.");
-                saveBtn.innerText = "Save Note ♡";
-                saveBtn.disabled = false;
-            });
-        }
 
         function updateCounter() {
             const startDate = new Date("2023-12-01T02:30:00");
             const now = new Date();
-            let difference = now - startDate;
+            let diff = now - startDate;
 
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            difference %= (1000 * 60 * 60 * 24);
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            diff %= (1000 * 60 * 60 * 24);
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            diff %= (1000 * 60 * 60);
+            const minutes = Math.floor(diff / (1000 * 60));
+            diff %= (1000 * 60);
+            const seconds = Math.floor(diff / 1000);
 
-            const hours = Math.floor(difference / (1000 * 60 * 60));
-            difference %= (1000 * 60 * 60);
-
-            const minutes = Math.floor(difference / (1000 * 60));
-            difference %= (1000 * 60);
-
-            const seconds = Math.floor(difference / 1000);
-
-            document.getElementById("counter").innerHTML =
-                days + " days ♡<br>" +
-                hours + " hours • " +
-                minutes + " minutes • " +
-                seconds + " seconds";
+            document.getElementById("counter").innerHTML = days + " days ♡<br>" + hours + " hours • " + minutes + " minutes • " + seconds + " seconds";
         }
 
         updateCounter();
