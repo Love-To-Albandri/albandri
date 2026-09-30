@@ -149,7 +149,7 @@
             line-height: 1.8;
         }
 
-        .thoughts-section, .confession-section, .comfort-section, .game-section, .drawing-section, .message-section, .counter-section {
+        .thoughts-section, .confession-section, .comfort-section, .game-section, .drawing-section, .message-section, .chat-section, .counter-section {
             min-height: 100vh;
             padding: 100px 20px;
             display: flex;
@@ -164,13 +164,14 @@
         .game-section { background: linear-gradient(#160b10, #1f0d14); }
         .drawing-section { background: linear-gradient(#1f0d14, #160b10); }
         .message-section { background: #14090f; min-height: 70vh; }
+        .chat-section { background: linear-gradient(#14090f, #10070b); min-height: 100vh; }
         .counter-section { background: #10070b; min-height: 70vh; }
 
-        .thought-card, .confession-card, .comfort-card, .game-card, .drawing-card, .message-card {
-            max-width: 900px;
+        .thought-card, .confession-card, .comfort-card, .game-card, .drawing-card, .message-card, .chat-card {
+            max-width: 800px;
             width: 100%;
             margin: 25px auto;
-            padding: 40px;
+            padding: 30px;
             border: 1px solid #7a4254;
             border-radius: 20px;
             background: rgba(53, 25, 35, 0.35);
@@ -178,6 +179,76 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        /* تنسيق صندوق المحادثة */
+        .chat-box {
+            width: 100%;
+            height: 400px;
+            background: #12070c;
+            border: 1px solid #8c4a5f;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .chat-message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 15px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .chat-message.sent {
+            background: #351923;
+            color: #f5d0dc;
+            align-self: flex-end;
+            border: 1px solid #8c4a5f;
+            border-bottom-right-radius: 3px;
+        }
+
+        .chat-message.received {
+            background: #231219;
+            color: #e8cfd7;
+            align-self: flex-start;
+            border: 1px solid #572a39;
+            border-bottom-left-radius: 3px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            height: 48px;
+            background: #1e0f17;
+            border: 1px solid #8c4a5f;
+            border-radius: 24px;
+            padding: 0 20px;
+            color: #fff7f9;
+            font-size: 15px;
+            outline: none;
+            direction: ltr;
+        }
+
+        .chat-input-area input:focus { border-color: #d9a6b6; }
+
+        .chat-input-area button {
+            padding: 0 25px;
+            height: 48px;
+            border-radius: 24px;
+            font-size: 15px;
         }
 
         .thought-card p {
@@ -213,7 +284,6 @@
             touch-action: none;
         }
 
-        /* إصلاح حجم اللعبة وتمركزها بشكل متجاوب بالكامل */
         #gameCanvas {
             width: 100%;
             max-width: 380px;
@@ -221,7 +291,6 @@
             cursor: pointer;
         }
 
-        /* شاشة رسم بحجم أكبر وأوضح ومتجاوبة */
         #drawingCanvas {
             width: 100%;
             max-width: 800px;
@@ -428,6 +497,23 @@
             </div>
         </section>
 
+        <!-- قسم صفحة الدردشة المباشرة الجديدة -->
+        <section class="chat-section">
+            <div class="chat-card">
+                <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Live Chat ♡</h2>
+                <p class="small" style="margin-bottom: 20px;">Talk to each other in real-time...</p>
+                
+                <div class="chat-box" id="chatContainer">
+                    <div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Loading chat...</div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendChatMessage()" id="sendChatBtn">Send ♡</button>
+                </div>
+            </div>
+        </section>
+
         <section class="counter-section">
             <h1>Since We Met ♡</h1>
             <p class="small">Since December 1, 2023 at 2:30 AM</p>
@@ -445,12 +531,22 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const SECRET_PIN = "2023"; 
 
+        // تحديد معرف فريد لهذا الجهاز/المتصفح لتمييز الرسائل المرسلة عن المستلمة في الشات
+        let myDeviceUUID = localStorage.getItem("my_device_uuid");
+        if (!myDeviceUUID) {
+            myDeviceUUID = 'user_' + Math.random().toString(36.2, 9);
+            localStorage.setItem("my_device_uuid", myDeviceUUID);
+        }
+
         function unlockSite() {
             const entered = document.getElementById("sitePasswordInput").value.trim();
             if (entered === SECRET_PIN) {
                 document.getElementById("lockScreen").style.display = "none";
                 document.getElementById("mainContent").style.display = "block";
                 loadMessagesFromSupabase();
+                subscribeToMessages();
+                loadChatMessages();
+                subscribeToChat();
                 loadSavedDrawingLines();
                 subscribeToDrawing();
             } else {
@@ -483,15 +579,40 @@
                 container.innerHTML = "";
                 if (data && data.length > 0) {
                     data.forEach((row) => {
-                        const box = document.createElement("div");
-                        box.className = "saved-box";
-                        box.innerHTML = `"${row.content}"`;
-                        container.appendChild(box);
+                        appendMessageToDOM(row.content, false);
                     });
                 } else {
-                    container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages yet. Be the first to write one ♡</p>`;
+                    container.innerHTML = `<p class="small" style="color: #aa7b89;" id="noMsgText">No messages yet. Be the first to write one ♡</p>`;
                 }
             } catch (err) {}
+        }
+
+        function appendMessageToDOM(content, prepend = false) {
+            const container = document.getElementById("messagesContainer");
+            const noMsg = document.getElementById("noMsgText");
+            if (noMsg) noMsg.remove();
+
+            const box = document.createElement("div");
+            box.className = "saved-box";
+            box.innerHTML = `"${content}"`;
+
+            if (prepend) {
+                container.prepend(box);
+            } else {
+                container.appendChild(box);
+            }
+        }
+
+        function subscribeToMessages() {
+            supabaseClient
+                .channel('public:messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                    const row = payload.new;
+                    if (row && row.content) {
+                        appendMessageToDOM(row.content, true);
+                    }
+                })
+                .subscribe();
         }
 
         async function saveMessageToSupabase() {
@@ -511,12 +632,76 @@
 
                 if (!error) {
                     document.getElementById("userNoteInput").value = "";
-                    loadMessagesFromSupabase();
                 }
             } catch (err) {}
             finally {
                 saveBtn.innerText = "Save Note ♡";
                 saveBtn.disabled = false;
+            }
+        }
+
+        // دوال نظام الدردشة المباشرة (Live Chat)
+        async function loadChatMessages() {
+            const chatContainer = document.getElementById("chatContainer");
+            try {
+                const { data, error } = await supabaseClient
+                    .from('chats')
+                    .select('*')
+                    .order('id', { ascending: true });
+
+                if (error) return;
+                chatContainer.innerHTML = "";
+                if (data && data.length > 0) {
+                    data.forEach((row) => {
+                        appendChatToDOM(row.content, row.sender_id);
+                    });
+                } else {
+                    chatContainer.innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">No messages in chat yet. Start talking ♡</div>`;
+                }
+            } catch (err) {}
+        }
+
+        function appendChatToDOM(content, senderId) {
+            const chatContainer = document.getElementById("chatContainer");
+            const noChat = document.getElementById("noChatText");
+            if (noChat) noChat.remove();
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "chat-message " + (senderId === myDeviceUUID ? "sent" : "received");
+            msgDiv.innerText = content;
+
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function subscribeToChat() {
+            supabaseClient
+                .channel('public:chats')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, payload => {
+                    const row = payload.new;
+                    if (row && row.content) {
+                        appendChatToDOM(row.content, row.sender_id);
+                    }
+                })
+                .subscribe();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById("chatInput");
+            const text = input.value.trim();
+            if (text === "") return;
+
+            input.value = "";
+            try {
+                await supabaseClient
+                    .from('chats')
+                    .insert([{ content: text, sender_id: myDeviceUUID }]);
+            } catch (err) {}
+        }
+
+        function handleChatKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
             }
         }
 
