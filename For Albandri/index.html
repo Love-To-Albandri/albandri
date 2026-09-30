@@ -10,6 +10,8 @@
         * {
             box-sizing: border-box;
             scroll-behavior: smooth;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -109,11 +111,41 @@
             line-height: 1.8;
         }
 
+        /* THOUGHTS SECTION (خواطر) */
+        .thoughts-section {
+            min-height: 100vh;
+            padding: 100px 20px;
+            background: linear-gradient(#271119, #1c0e14);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .thought-card {
+            max-width: 650px;
+            width: 100%;
+            margin: 25px auto;
+            padding: 40px;
+            border: 1px solid #7a4254;
+            border-radius: 20px;
+            background: rgba(53, 25, 35, 0.35);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .thought-card p {
+            color: #f2e2e7;
+            font-size: 19px;
+            line-height: 2.1;
+            font-style: italic;
+            margin: 0;
+        }
+
         /* CONFESSION SECTION */
         .confession-section {
             min-height: 100vh;
             padding: 100px 20px;
-            background: linear-gradient(#271119, #1a0d13);
+            background: linear-gradient(#1c0e14, #1a0d13);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -127,7 +159,6 @@
             border-radius: 25px;
             background: rgba(53, 25, 35, 0.4);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 1.5s ease;
         }
 
         .confession-card h2 {
@@ -161,7 +192,6 @@
             border-radius: 25px;
             background: rgba(53, 25, 35, 0.4);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 1.5s ease;
         }
 
         .comfort-card h2 {
@@ -244,6 +274,8 @@
             resize: none;
             margin-bottom: 20px;
             outline: none;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         textarea:focus {
@@ -263,6 +295,8 @@
             word-break: break-word;
             text-align: left;
             direction: ltr;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         /* COUNTER */
@@ -364,6 +398,19 @@
         </div>
     </section>
 
+    <!-- THOUGHTS SECTION (خواطر) -->
+    <section class="thoughts-section">
+        <h1 style="font-size: 38px; color: #f5d0dc; margin-bottom: 40px;">خواطر ♡</h1>
+        
+        <div class="thought-card">
+            <p>"إلى البندري.. كأنما ألقى بكِ الزمان في أيسرِ بقاع روحي، فاستوطنتِ واطمأنرتِ، وصار العبور إليكِ هو المعنى الحقيقي لكل طمأنينة."</p>
+        </div>
+
+        <div class="thought-card">
+            <p>"في كل مرة ألتفت فيها حول تفاصيل أيامي، أجدكِ السطر الأكثر نوراً، والأمر الذي أستند إليه وأنا آمن تماماً بأنني اخترتُ المكان الصحيح."</p>
+        </div>
+    </section>
+
     <!-- CONFESSION SECTION -->
     <section class="confession-section">
         <div class="confession-card">
@@ -405,7 +452,7 @@
     <!-- WRITE A MESSAGE FOR ALBANDARI -->
     <section class="message-section">
         <div class="message-card">
-            <h2 style="font-size: 28px; margin-bottom: 15px;">Leave a note for me... ♡</h2>
+            <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
             <p class="small" style="margin-bottom: 25px;">Write what's on your mind, and your messages will always stay here.</p>
             
             <textarea id="userNoteInput" placeholder="Write a new message here..."></textarea>
@@ -465,9 +512,9 @@
                     x: Math.random() * (canvas.width - 60) + 20,
                     y: -35,
                     size: 42,
-                    speed: Math.random() * 1.5 + 2.5 // سرعة أعلى وأكثر حماساً
+                    speed: Math.random() * 1.5 + 2.5
                 });
-            }, 750); // تظهر القلوب بشكل أسرع وورا بعض
+            }, 750);
             
             requestAnimationFrame(updateGame);
         }
@@ -491,7 +538,7 @@
                 ctx.quadraticCurveTo(x + size / 2, y, x + size / 2, y + size / 4);
                 ctx.quadraticCurveTo(x + size / 2, y, x + size * 3/4, y);
                 ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
-                ctx.quadraticCurveTo(x + size, y + size / 2, x + size * 3/4, y + size * 3/4);
+                ctx.quadraticCurveTo(x + size, y + size / 2, x + size * 3/4, y * 3/4 + size * 3/4);
                 ctx.lineTo(x + size / 2, y + size);
                 ctx.lineTo(x + size / 4, y + size * 3/4);
                 ctx.quadraticCurveTo(x, y + size / 2, x, y + size / 4);
@@ -522,7 +569,6 @@
                 let centerY = h.y + h.size / 2;
                 let distance = Math.hypot(clickX - centerX, clickY - centerY);
                 
-                // منطقة لمس واسعة لتسهيل التجميع حتى مع السرعة الجديدة
                 if (distance < h.size * 2.0) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
