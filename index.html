@@ -149,7 +149,7 @@
             line-height: 1.8;
         }
 
-        .thoughts-section, .confession-section, .comfort-section, .game-section, .message-section, .counter-section {
+        .thoughts-section, .confession-section, .comfort-section, .game-section, .drawing-section, .message-section, .counter-section {
             min-height: 100vh;
             padding: 100px 20px;
             display: flex;
@@ -162,10 +162,11 @@
         .confession-section { background: linear-gradient(#1c0e14, #1a0d13); }
         .comfort-section { background: linear-gradient(#1a0d13, #160b10); }
         .game-section { background: linear-gradient(#160b10, #1f0d14); }
+        .drawing-section { background: linear-gradient(#1f0d14, #160b10); }
         .message-section { background: #14090f; min-height: 70vh; }
         .counter-section { background: #10070b; min-height: 70vh; }
 
-        .thought-card, .confession-card, .comfort-card, .game-card, .message-card {
+        .thought-card, .confession-card, .comfort-card, .game-card, .drawing-card, .message-card {
             max-width: 650px;
             width: 100%;
             margin: 25px auto;
@@ -199,17 +200,26 @@
             margin-bottom: 20px;
         }
 
-        #gameCanvas {
+        #gameCanvas, #drawingCanvas {
             background: #12070c;
             border: 1px solid #8c4a5f;
             border-radius: 15px;
             display: block;
             margin: 20px auto;
+            max-width: 100%;
+            touch-action: none;
+        }
+
+        #gameCanvas {
             width: 340px;
             height: 320px;
-            max-width: 100%;
             cursor: pointer;
-            touch-action: none;
+        }
+
+        #drawingCanvas {
+            width: 400px;
+            height: 320px;
+            cursor: crosshair;
         }
 
         textarea {
@@ -376,6 +386,23 @@
             </div>
         </section>
 
+        <!-- لوحة الرسم المشتركة -->
+        <section class="drawing-section">
+            <div class="drawing-card">
+                <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
+                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on her screen and vice versa! ♡</p>
+                
+                <canvas id="drawingCanvas" width="400" height="320"></canvas>
+                
+                <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; align-items: center;">
+                    <button onclick="setBrushColor('#f5d0dc')" style="background: #f5d0dc; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="Pink"></button>
+                    <button onclick="setBrushColor('#d9a6b6')" style="background: #d9a6b6; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="Rose"></button>
+                    <button onclick="setBrushColor('#ffffff')" style="background: #ffffff; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; padding:0;" title="White"></button>
+                    <button onclick="clearCanvasAction()" style="padding: 8px 20px; font-size: 14px; border-radius: 20px;">Clear Canvas ♡</button>
+                </div>
+            </div>
+        </section>
+
         <section class="message-section">
             <div class="message-card">
                 <h2 style="font-size: 26px; margin-bottom: 15px;">Write something from your heart... ♡</h2>
@@ -409,7 +436,6 @@
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // كلمة المرور الجديدة أصبحت 2023
         const SECRET_PIN = "2023"; 
 
         function unlockSite() {
@@ -418,6 +444,8 @@
                 document.getElementById("lockScreen").style.display = "none";
                 document.getElementById("mainContent").style.display = "block";
                 loadMessagesFromSupabase();
+                loadSavedDrawing();
+                subscribeToDrawing();
             } else {
                 alert("Incorrect password, please try again ♡");
                 document.getElementById("sitePasswordInput").value = "";
@@ -436,21 +464,16 @@
             else song.pause();
         }
 
-        // تحميل الرسائل من قاعدة البيانات السحابية Supabase
+        // تحميل الرسائل
         async function loadMessagesFromSupabase() {
             const container = document.getElementById("messagesContainer");
-            
             try {
                 const { data, error } = await supabaseClient
                     .from('messages')
                     .select('*')
                     .order('id', { ascending: false });
 
-                if (error) {
-                    container.innerHTML = `<p class="small" style="color: #aa7b89;">Error loading messages.</p>`;
-                    return;
-                }
-
+                if (error) return;
                 container.innerHTML = "";
                 if (data && data.length > 0) {
                     data.forEach((row) => {
@@ -462,19 +485,16 @@
                 } else {
                     container.innerHTML = `<p class="small" style="color: #aa7b89;">No messages yet. Be the first to write one ♡</p>`;
                 }
-            } catch (err) {
-                container.innerHTML = `<p class="small" style="color: #aa7b89;">Could not connect to database.</p>`;
-            }
+            } catch (err) {}
         }
 
-        // حفظ رسالة جديدة في قاعدة البيانات السحابية Supabase للأبد
+        // حفظ رسالة جديدة
         async function saveMessageToSupabase() {
             const noteText = document.getElementById("userNoteInput").value.trim();
             if (noteText === "") {
                 alert("Please write something before saving ♡");
                 return;
             }
-
             const saveBtn = document.getElementById("saveBtn");
             saveBtn.innerText = "Saving... ♡";
             saveBtn.disabled = true;
@@ -484,16 +504,12 @@
                     .from('messages')
                     .insert([{ content: noteText }]);
 
-                if (error) {
-                    alert("Error saving message.");
-                } else {
+                if (!error) {
                     document.getElementById("userNoteInput").value = "";
-                    alert("Note saved successfully for ever! ♡");
                     loadMessagesFromSupabase();
                 }
-            } catch (err) {
-                alert("Something went wrong.");
-            } finally {
+            } catch (err) {}
+            finally {
                 saveBtn.innerText = "Save Note ♡";
                 saveBtn.disabled = false;
             }
@@ -564,6 +580,130 @@
                     hearts.splice(i, 1);
                     break;
                 }
+            }
+        });
+
+        // لوحة الرسم المزامنة
+        const drawCanvas = document.getElementById("drawingCanvas");
+        const drawCtx = drawCanvas.getContext("2d");
+        let isDrawing = false;
+        let brushColor = "#f5d0dc";
+        let lastX = 0;
+        let lastY = 0;
+
+        drawCtx.strokeStyle = brushColor;
+        drawCtx.lineWidth = 3;
+        drawCtx.lineCap = "round";
+
+        function setBrushColor(color) {
+            brushColor = color;
+            drawCtx.strokeStyle = brushColor;
+        }
+
+        async function saveDrawingState() {
+            const dataURL = drawCanvas.toDataURL();
+            await supabaseClient.from('drawings').delete().neq('id', 0);
+            await supabaseClient.from('drawings').insert([{ line_data: dataURL }]);
+        }
+
+        async function loadSavedDrawing() {
+            const { data } = await supabaseClient.from('drawings').select('*').limit(1).single();
+            if (data && data.line_data) {
+                const img = new Image();
+                img.onload = () => {
+                    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                    drawCtx.drawImage(img, 0, 0);
+                };
+                img.src = data.line_data;
+            }
+        }
+
+        function subscribeToDrawing() {
+            supabaseClient
+                .channel('public:drawings')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'drawings' }, payload => {
+                    if (payload.new && payload.new.line_data) {
+                        const img = new Image();
+                        img.onload = () => {
+                            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                            drawCtx.drawImage(img, 0, 0);
+                        };
+                        img.src = payload.new.line_data;
+                    }
+                })
+                .subscribe();
+        }
+
+        async function clearCanvasAction() {
+            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            await supabaseClient.from('drawings').delete().neq('id', 0);
+        }
+
+        function getMousePos(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left) * (drawCanvas.width / rect.width),
+                y: (e.clientY - rect.top) * (drawCanvas.height / rect.height)
+            };
+        }
+
+        function getTouchPos(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            return {
+                x: (e.touches[0].clientX - rect.left) * (drawCanvas.width / rect.width),
+                y: (e.touches[0].clientY - rect.top) * (drawCanvas.height / rect.height)
+            };
+        }
+
+        drawCanvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+        });
+
+        drawCanvas.addEventListener("mousemove", (e) => {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            drawCtx.beginPath();
+            drawCtx.moveTo(lastX, lastY);
+            drawCtx.lineTo(pos.x, pos.y);
+            drawCtx.stroke();
+            lastX = pos.x;
+            lastY = pos.y;
+        });
+
+        window.addEventListener("mouseup", () => {
+            if (isDrawing) {
+                isDrawing = false;
+                saveDrawingState();
+            }
+        });
+
+        drawCanvas.addEventListener("touchstart", (e) => {
+            isDrawing = true;
+            const pos = getTouchPos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+            e.preventDefault();
+        });
+
+        drawCanvas.addEventListener("touchmove", (e) => {
+            if (!isDrawing) return;
+            const pos = getTouchPos(e);
+            drawCtx.beginPath();
+            drawCtx.moveTo(lastX, lastY);
+            drawCtx.lineTo(pos.x, pos.y);
+            drawCtx.stroke();
+            lastX = pos.x;
+            lastY = pos.y;
+            e.preventDefault();
+        });
+
+        window.addEventListener("touchend", () => {
+            if (isDrawing) {
+                isDrawing = false;
+                saveDrawingState();
             }
         });
 
