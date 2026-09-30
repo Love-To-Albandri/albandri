@@ -386,11 +386,11 @@
             </div>
         </section>
 
-        <!-- لوحة الرسم المشتركة -->
+        <!-- لوحة الرسم المشتركة اللحظية -->
         <section class="drawing-section">
             <div class="drawing-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
-                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on her screen and vice versa! ♡</p>
+                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on her screen live! ♡</p>
                 
                 <canvas id="drawingCanvas" width="400" height="320"></canvas>
                 
@@ -430,12 +430,10 @@
     </div>
 
     <script>
-        // إعدادات اتصال Supabase السحابي
         const SUPABASE_URL = "https://ymnuakhkbvdicbjfrzco.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltbnVha2hrYnZkaWNiamZyemNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MjkyMjcsImV4cCI6MjEwNjMwNTIyN30.mjL8dNQ8KNPDbCLvXnmpHq-nn11ziiEcOAFzW6-DYkc";
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         const SECRET_PIN = "2023"; 
 
         function unlockSite() {
@@ -464,7 +462,6 @@
             else song.pause();
         }
 
-        // تحميل الرسائل
         async function loadMessagesFromSupabase() {
             const container = document.getElementById("messagesContainer");
             try {
@@ -488,7 +485,6 @@
             } catch (err) {}
         }
 
-        // حفظ رسالة جديدة
         async function saveMessageToSupabase() {
             const noteText = document.getElementById("userNoteInput").value.trim();
             if (noteText === "") {
@@ -583,13 +579,14 @@
             }
         });
 
-        // لوحة الرسم المزامنة
+        // لوحة الرسم اللحظية (Real-time Canvas)
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
         let isDrawing = false;
         let brushColor = "#f5d0dc";
         let lastX = 0;
         let lastY = 0;
+        let isRemoteUpdate = false; // لمنع تداخل التحديثات الدورية
 
         drawCtx.strokeStyle = brushColor;
         drawCtx.lineWidth = 3;
@@ -601,6 +598,7 @@
         }
 
         async function saveDrawingState() {
+            if (isRemoteUpdate) return;
             const dataURL = drawCanvas.toDataURL();
             await supabaseClient.from('drawings').delete().neq('id', 0);
             await supabaseClient.from('drawings').insert([{ line_data: dataURL }]);
@@ -623,10 +621,12 @@
                 .channel('public:drawings')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'drawings' }, payload => {
                     if (payload.new && payload.new.line_data) {
+                        isRemoteUpdate = true;
                         const img = new Image();
                         img.onload = () => {
                             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
                             drawCtx.drawImage(img, 0, 0);
+                            isRemoteUpdate = false;
                         };
                         img.src = payload.new.line_data;
                     }
@@ -671,6 +671,9 @@
             drawCtx.stroke();
             lastX = pos.x;
             lastY = pos.y;
+            
+            // تحديث الرسم أول بأول أثناء التحريك (كلما تم رسم خط يتم حفظه سحابياً مباشرة لتراه الطرف الآخر)
+            saveDrawingState();
         });
 
         window.addEventListener("mouseup", () => {
@@ -698,6 +701,8 @@
             lastX = pos.x;
             lastY = pos.y;
             e.preventDefault();
+            
+            saveDrawingState();
         });
 
         window.addEventListener("touchend", () => {
