@@ -553,7 +553,7 @@
             localStorage.setItem("my_device_uuid", myDeviceUUID);
         }
 
-        let lastDisplayedDate = null; // لمتابعة فاصل الأيام في الشات
+        let lastDisplayedDate = null; 
 
         function unlockSite() {
             const entered = document.getElementById("sitePasswordInput").value.trim();
@@ -657,7 +657,7 @@
             }
         }
 
-        // --- نظام الشات دائم للأبد مع الوقت وتاريخ الأيام ---
+        // --- نظام الشات الذكي: Today تتحول لـ Yesterday، وYesterday تتحول لتاريخ الرسالة الحقيقي بمرور الأيام ---
         async function loadChatMessages() {
             const chatContainer = document.getElementById("chatContainer");
             lastDisplayedDate = null;
@@ -665,7 +665,7 @@
                 const { data, error } = await supabaseClient
                     .from('chats')
                     .select('*')
-                    .order('created_at', { ascending: true }); // ترتيب زمني تصاعدي للأبد
+                    .order('created_at', { ascending: true });
 
                 if (error) return;
                 chatContainer.innerHTML = "";
@@ -679,31 +679,45 @@
             } catch (err) {}
         }
 
+        function getSmartDateString(dateInput) {
+            const messageDate = new Date(dateInput);
+            const today = new Date();
+
+            // إزالة الساعات للمقارنة الدقيقة بين الأيام
+            const dMessage = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+            const dToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            const diffTime = dToday - dMessage;
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return "Today";
+            } else if (diffDays === 1) {
+                return "Yesterday";
+            } else {
+                // إذا مر أكثر من يومين، يعرض التاريخ الأصلي للرسالة للأبد (مثال: Oct 1, 2026)
+                return messageDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+        }
+
         function appendChatToDOM(content, senderId, createdAt) {
             const chatContainer = document.getElementById("chatContainer");
             const noChat = document.getElementById("noChatText");
             if (noChat) noChat.remove();
 
-            // معالجة التاريخ والوقت
             const messageDate = createdAt ? new Date(createdAt) : new Date();
+            const dateString = getSmartDateString(messageDate);
             
-            // استخراج تاريخ اليوم بصيغة واضحة (مثلا: October 1, 2026 أو اليوم الحالي)
-            const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
-            const dateString = messageDate.toLocaleDateString('en-US', optionsDate);
-            
-            // إذا كان يوم جديد لم يتم عرضه من قبل في هذا الجلسة، نضيف فاصل التاريخ
+            // إضافة الفاصل إذا كان يوم جديد لم يُعرض بعد في هذا التحديث
             if (dateString !== lastDisplayedDate) {
                 lastDisplayedDate = dateString;
-                const todayStr = new Date().toLocaleDateString('en-US', optionsDate);
-                const displayTitle = (dateString === todayStr) ? "Today" : dateString;
 
                 const dateDiv = document.createElement("div");
                 dateDiv.className = "chat-date-divider";
-                dateDiv.innerText = displayTitle;
+                dateDiv.innerText = dateString;
                 chatContainer.appendChild(dateDiv);
             }
 
-            // استخراج وقت الرسالة (مثلاً 08:15 PM)
             const timeString = messageDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
             const msgDiv = document.createElement("div");
@@ -753,14 +767,12 @@
             appendChatToDOM(text, myDeviceUUID, currentTimestamp);
 
             try {
-                // إرسال فوري للطرف الآخر عبر البث المباشر
                 await supabaseClient.channel('public:chats').send({
                     type: 'broadcast',
                     event: 'new_chat_message',
                     payload: messageData
                 });
 
-                // حفظها في قاعدة البيانات للأبد
                 await supabaseClient.from('chats').insert([{
                     content: text,
                     sender_id: myDeviceUUID,
