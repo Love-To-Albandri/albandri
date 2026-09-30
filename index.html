@@ -657,7 +657,6 @@
             }
         }
 
-        // --- نظام الشات الذكي: Today تتحول لـ Yesterday، وYesterday تتحول لتاريخ الرسالة الحقيقي بمرور الأيام ---
         async function loadChatMessages() {
             const chatContainer = document.getElementById("chatContainer");
             lastDisplayedDate = null;
@@ -683,7 +682,6 @@
             const messageDate = new Date(dateInput);
             const today = new Date();
 
-            // إزالة الساعات للمقارنة الدقيقة بين الأيام
             const dMessage = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
             const dToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -695,7 +693,6 @@
             } else if (diffDays === 1) {
                 return "Yesterday";
             } else {
-                // إذا مر أكثر من يومين، يعرض التاريخ الأصلي للرسالة للأبد (مثال: Oct 1, 2026)
                 return messageDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             }
         }
@@ -708,7 +705,6 @@
             const messageDate = createdAt ? new Date(createdAt) : new Date();
             const dateString = getSmartDateString(messageDate);
             
-            // إضافة الفاصل إذا كان يوم جديد لم يُعرض بعد في هذا التحديث
             if (dateString !== lastDisplayedDate) {
                 lastDisplayedDate = dateString;
 
@@ -909,7 +905,6 @@
 
         async function loadSavedDrawingLines() {
             const { data } = await supabaseClient.from('drawings').select('*').order('id', { ascending: true });
-            drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             if (data && data.length > 0) {
                 data.forEach(row => {
                     drawLineFromString(row.line_data);
