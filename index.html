@@ -505,12 +505,11 @@
             gameInterval = setInterval(() => {
                 if (!isPlaying) return;
                 hearts.push({
-                    x: Math.random() * (canvas.width - 60) + 20,
-                    y: -35,
-                    size: 42,
-                    speed: Math.random() * 1.5 + 2.5
+                    x: Math.random() * (canvas.width - 60) + 30,
+                    y: -30,
+                    speed: Math.random() * 1.2 + 2.0
                 });
-            }, 750);
+            }, 800);
             
             requestAnimationFrame(updateGame);
         }
@@ -524,24 +523,21 @@
             hearts.forEach((h, index) => {
                 h.y += h.speed;
                 
-                // Draw heart shape
+                // Stable Heart Shape
+                ctx.save();
+                ctx.translate(h.x, h.y);
                 ctx.beginPath();
-                let x = h.x;
-                let y = h.y;
-                let size = h.size;
-                ctx.moveTo(x, y + size / 4);
-                ctx.quadraticCurveTo(x, y, x + size / 4, y);
-                ctx.quadraticCurveTo(x + size / 2, y, x + size / 2, y + size / 4);
-                ctx.quadraticCurveTo(x + size / 2, y, x + size * 3/4, y);
-                ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
-                ctx.quadraticCurveTo(x + size, y + size / 2, x + size * 3/4, y * 3/4 + size * 3/4);
-                ctx.lineTo(x + size / 2, y + size);
-                ctx.lineTo(x + size / 4, y + size * 3/4);
-                ctx.quadraticCurveTo(x, y + size / 2, x, y + size / 4);
+                ctx.moveTo(0, 8);
+                ctx.bezierCurveTo(0, 3, -12, -4, -12, -12);
+                ctx.bezierCurveTo(-12, -20, 0, -20, 0, -12);
+                ctx.bezierCurveTo(0, -20, 12, -20, 12, -12);
+                ctx.bezierCurveTo(12, -4, 0, 3, 0, 8);
+                ctx.closePath();
                 ctx.fill();
+                ctx.restore();
 
                 // Remove if out of bounds
-                if (h.y > canvas.height) {
+                if (h.y > canvas.height + 30) {
                     hearts.splice(index, 1);
                 }
             });
@@ -561,11 +557,9 @@
 
             for (let i = hearts.length - 1; i >= 0; i--) {
                 let h = hearts[i];
-                let centerX = h.x + h.size / 2;
-                let centerY = h.y + h.size / 2;
-                let distance = Math.hypot(clickX - centerX, clickY - centerY);
+                let distance = Math.hypot(clickX - h.x, clickY - h.y);
                 
-                if (distance < h.size * 2.0) {
+                if (distance < 25) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
                     hearts.splice(i, 1);
