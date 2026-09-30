@@ -399,7 +399,7 @@
         <section class="drawing-section">
             <div class="drawing-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
-                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on her screen live! ♡</p>
+                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on the screen live! ♡</p>
                 
                 <canvas id="drawingCanvas" width="800" height="520"></canvas>
                 
@@ -571,7 +571,6 @@
             requestAnimationFrame(updateGame);
         }
 
-        // دالة موحدة لدقة الضغط والنقر في الجوال والكمبيوتر للعبة
         function handleGameInteraction(clientX, clientY) {
             if (!isPlaying) return;
             const rect = canvas.getBoundingClientRect();
@@ -579,7 +578,6 @@
             const clickY = (clientY - rect.top) * (canvas.height / rect.height);
 
             for (let i = hearts.length - 1; i >= 0; i--) {
-                // تكبير مساحة التلامس قليلاً (35 بكسل) لضمان سهولة الضغط بالإصبع
                 if (Math.hypot(clickX - hearts[i].x, clickY - hearts[i].y) < 35) {
                     score++;
                     document.getElementById("scoreVal").innerText = score;
