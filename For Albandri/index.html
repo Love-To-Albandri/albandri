@@ -195,13 +195,26 @@
             direction: ltr;
         }
 
+        .chat-date-divider {
+            text-align: center;
+            color: #aa7b89;
+            font-size: 13px;
+            margin: 15px 0 5px 0;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed rgba(140, 74, 95, 0.3);
+            padding-bottom: 5px;
+            width: 100%;
+        }
+
         .chat-message {
             max-width: 75%;
-            padding: 12px 16px;
+            padding: 10px 14px 6px 14px;
             border-radius: 15px;
             font-size: 15px;
             line-height: 1.5;
             word-break: break-word;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-message.sent {
@@ -218,6 +231,13 @@
             align-self: flex-start;
             border: 1px solid #572a39;
             border-bottom-left-radius: 3px;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: #aa7b89;
+            margin-top: 4px;
+            align-self: flex-end;
         }
 
         .chat-input-area {
@@ -533,6 +553,8 @@
             localStorage.setItem("my_device_uuid", myDeviceUUID);
         }
 
+        let lastDisplayedDate = null; // لمتابعة فاصل الأيام في الشات
+
         function unlockSite() {
             const entered = document.getElementById("sitePasswordInput").value.trim();
             if (entered === SECRET_PIN) {
@@ -635,23 +657,62 @@
             }
         }
 
-        // نظام الشات: يبدأ فارغاً ونظيفاً مع البث الفوري وتفريغ التجارب القديمة
+        // --- نظام الشات دائم للأبد مع الوقت وتاريخ الأيام ---
         async function loadChatMessages() {
             const chatContainer = document.getElementById("chatContainer");
-            chatContainer.innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Start talking ♡</div>`;
+            lastDisplayedDate = null;
             try {
-                await supabaseClient.from('chats').delete().neq('id', 0);
+                const { data, error } = await supabaseClient
+                    .from('chats')
+                    .select('*')
+                    .order('created_at', { ascending: true }); // ترتيب زمني تصاعدي للأبد
+
+                if (error) return;
+                chatContainer.innerHTML = "";
+                if (data && data.length > 0) {
+                    data.forEach((row) => {
+                        appendChatToDOM(row.content, row.sender_id, row.created_at);
+                    });
+                } else {
+                    chatContainer.innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Start talking ♡</div>`;
+                }
             } catch (err) {}
         }
 
-        function appendChatToDOM(content, senderId) {
+        function appendChatToDOM(content, senderId, createdAt) {
             const chatContainer = document.getElementById("chatContainer");
             const noChat = document.getElementById("noChatText");
             if (noChat) noChat.remove();
 
+            // معالجة التاريخ والوقت
+            const messageDate = createdAt ? new Date(createdAt) : new Date();
+            
+            // استخراج تاريخ اليوم بصيغة واضحة (مثلا: October 1, 2026 أو اليوم الحالي)
+            const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
+            const dateString = messageDate.toLocaleDateString('en-US', optionsDate);
+            
+            // إذا كان يوم جديد لم يتم عرضه من قبل في هذا الجلسة، نضيف فاصل التاريخ
+            if (dateString !== lastDisplayedDate) {
+                lastDisplayedDate = dateString;
+                const todayStr = new Date().toLocaleDateString('en-US', optionsDate);
+                const displayTitle = (dateString === todayStr) ? "Today" : dateString;
+
+                const dateDiv = document.createElement("div");
+                dateDiv.className = "chat-date-divider";
+                dateDiv.innerText = displayTitle;
+                chatContainer.appendChild(dateDiv);
+            }
+
+            // استخراج وقت الرسالة (مثلاً 08:15 PM)
+            const timeString = messageDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
             const msgDiv = document.createElement("div");
             msgDiv.className = "chat-message " + (senderId === myDeviceUUID ? "sent" : "received");
-            msgDiv.innerText = content;
+            
+            msgDiv.innerHTML = `
+                <span>${content}</span>
+                <span class="chat-time">${timeString}</span>
+            `;
 
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -664,17 +725,14 @@
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, payload => {
                     const row = payload.new;
                     if (row && row.content) {
-                        appendChatToDOM(row.content, row.sender_id);
+                        appendChatToDOM(row.content, row.sender_id, row.created_at);
                     }
                 })
                 .on('broadcast', { event: 'new_chat_message' }, payload => {
                     const row = payload.payload;
                     if (row && row.content) {
-                        appendChatToDOM(row.content, row.sender_id);
+                        appendChatToDOM(row.content, row.sender_id, row.created_at);
                     }
-                })
-                .on('broadcast', { event: 'clear_chat' }, () => {
-                    document.getElementById("chatContainer").innerHTML = `<div class="small" style="text-align: center; color: #aa7b89; margin: auto;" id="noChatText">Start talking ♡</div>`;
                 })
                 .subscribe();
         }
@@ -684,22 +742,30 @@
             const text = input.value.trim();
             if (text === "") return;
 
+            const currentTimestamp = new Date().toISOString();
             const messageData = {
                 content: text,
-                sender_id: myDeviceUUID
+                sender_id: myDeviceUUID,
+                created_at: currentTimestamp
             };
 
             input.value = "";
-            appendChatToDOM(text, myDeviceUUID);
+            appendChatToDOM(text, myDeviceUUID, currentTimestamp);
 
             try {
+                // إرسال فوري للطرف الآخر عبر البث المباشر
                 await supabaseClient.channel('public:chats').send({
                     type: 'broadcast',
                     event: 'new_chat_message',
                     payload: messageData
                 });
 
-                await supabaseClient.from('chats').insert([messageData]);
+                // حفظها في قاعدة البيانات للأبد
+                await supabaseClient.from('chats').insert([{
+                    content: text,
+                    sender_id: myDeviceUUID,
+                    created_at: currentTimestamp
+                }]);
             } catch (err) {}
         }
 
