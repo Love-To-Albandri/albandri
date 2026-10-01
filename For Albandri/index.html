@@ -421,6 +421,12 @@
             <source src="oursong.mp3" type="audio/mpeg">
         </audio>
 
+        <!-- قائمة اختيار الأغاني (تظهر عند الضغط على زر الموسيقى) -->
+        <div id="musicMenu" style="position: fixed; bottom: 80px; right: 20px; background: #351923; border: 1px solid #d9a6b6; border-radius: 15px; padding: 10px; display: none; z-index: 101; flex-direction: column; gap: 8px;">
+            <button onclick="playChosenSong('oursong.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 6px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 150px;">♫ الأغنية الأولى</button>
+            <button onclick="playChosenSong('song2.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 6px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 150px;">♫ الأغنية الثانية</button>
+        </div>
+
         <section class="home">
             <div class="home-content">
                 <h1>For Albandari, with love ♡</h1>
@@ -536,7 +542,7 @@
             <div id="counter"></div>
         </section>
 
-        <button class="music-button" onclick="toggleMusic()">♫</button>
+        <button class="music-button" onclick="toggleMusicMenu()">♫</button>
 
     </div>
 
@@ -547,10 +553,9 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const SECRET_PIN = "2023"; 
 
-        // توحيد معرف الجهاز أو استخدام رابط ثابت للطرفين لكي يظهر إرسال الطرف الأول يمين والطرف الثاني يسار بشكل دقيق
         let myDeviceUUID = localStorage.getItem("my_device_uuid");
         if (!myDeviceUUID) {
-            myDeviceUUID = 'device_user_1'; // تم توحيده لتجنب تعارض الـ UUID العشوائي
+            myDeviceUUID = 'device_user_1';
             localStorage.setItem("my_device_uuid", myDeviceUUID);
         }
 
@@ -579,10 +584,18 @@
             document.getElementById("story").scrollIntoView({ behavior: "smooth" });
         }
 
-        function toggleMusic() {
+        // دالة إظهار وإخفاء قائمة الأغاني
+        function toggleMusicMenu() {
+            const menu = document.getElementById("musicMenu");
+            menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+        }
+
+        // دالة تشغيل الأغنية المختارة وإغلاق القائمة
+        function playChosenSong(songFileName) {
             const song = document.getElementById("ourSong");
-            if (song.paused) song.play();
-            else song.pause();
+            song.src = songFileName;
+            song.play().catch(error => console.log(error));
+            document.getElementById("musicMenu").style.display = "none";
         }
 
         async function loadMessagesFromSupabase() {
@@ -718,7 +731,6 @@
             const timeString = messageDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
             const msgDiv = document.createElement("div");
-            // الرسائل التي أرسلتها أنت تظهر في اليمين (sent)، ورسائل الطرف الآخر في اليسار (received)
             msgDiv.className = "chat-message " + (senderId === myDeviceUUID ? "sent" : "received");
             
             msgDiv.innerHTML = `
@@ -1032,9 +1044,9 @@
             e.preventDefault();
         }, { passive: false });
 
-        window.addEventListener("touchend", () => {
+        window.touchend = () => {
             isDrawing = false;
-        });
+        };
 
         function updateCounter() {
             const startDate = new Date("2023-12-01T02:30:00");
