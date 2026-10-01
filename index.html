@@ -719,7 +719,7 @@
             const messageDate = createdAt ? new Date(createdAt) : new Date();
             const dateString = getSmartDateString(messageDate);
             
-            if (dateString !== lastDisplayedDate) {
+            if (dateString !== lastDisplayedDate)  {
                 lastDisplayedDate = dateString;
 
                 const dateDiv = document.createElement("div");
@@ -875,13 +875,14 @@
             e.preventDefault();
         }, { passive: false });
 
-        // ==================== تعديل قسم الرسم بدقة ====================
+        // ==================== تعديل قسم الرسم لجمع النقاط دفعة واحدة وتفادي الحذف ====================
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
         let isDrawing = false;
         let brushColor = "#f5d0dc";
         let lastX = 0;
         let lastY = 0;
+        let currentStrokePoints = []; // تجميع نقاط السحب الحالية
 
         drawCtx.strokeStyle = brushColor;
         drawCtx.lineWidth = 4;
@@ -893,48 +894,48 @@
             drawCtx.strokeStyle = brushColor;
         }
 
-        function drawLineFromString(dataStr) {
-            if (!dataStr) return;
-            const parts = dataStr.split(",");
-            if (parts.length === 5) {
-                const x0 = parseFloat(parts[0]);
-                const y0 = parseFloat(parts[1]);
-                const x1 = parseFloat(parts[2]);
-                const y1 = parseFloat(parts[3]);
-                const color = parts[4];
+        function drawPathFromData(strokeObj) {
+            if (!strokeObj || !strokeObj.points || strokeObj.points.length === 0) return;
+            const pts = strokeObj.points;
+            const color = strokeObj.color || "#f5d0dc";
 
-                drawCtx.save();
-                drawCtx.strokeStyle = color;
-                drawCtx.beginPath();
-                drawCtx.moveTo(x0, y0);
-                drawCtx.lineTo(x1, y1);
-                drawCtx.stroke();
-                drawCtx.restore();
+            drawCtx.save();
+            drawCtx.strokeStyle = color;
+            drawCtx.beginPath();
+            drawCtx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+                drawCtx.lineTo(pts[i].x, pts[i].y);
             }
+            drawCtx.stroke();
+            drawCtx.restore();
         }
 
-        async function sendSegmentToSupabase(x0, y0, x1, y1, color) {
-            const dataStr = `${x0},${y0},${x1},${y1},${color}`;
-            let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
-            if (!Array.isArray(localLines)) localLines = [];
-            localLines.push(dataStr);
-            localStorage.setItem("saved_canvas_lines", JSON.stringify(localLines));
+        async function saveStrokeToSupabase(strokeObj) {
+            const jsonStr = JSON.stringify(strokeObj);
+            let localStrokes = JSON.parse(localStorage.getItem("saved_canvas_strokes") || "[]");
+            if (!Array.isArray(localStrokes)) localStrokes = [];
+            localStrokes.push(jsonStr);
+            localStorage.setItem("saved_canvas_strokes", JSON.stringify(localStrokes));
 
-            await supabaseClient.from('drawings').insert([{ line_data: dataStr }]);
+            await supabaseClient.from('drawings').insert([{ line_data: jsonStr }]);
         }
 
         async function loadSavedDrawingLines() {
-            let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
-            if (Array.isArray(localLines) && localLines.length > 0) {
-                localLines.forEach(lineStr => drawLineFromString(lineStr));
+            let localStrokes = JSON.parse(localStorage.getItem("saved_canvas_strokes") || "[]");
+            if (Array.isArray(localStrokes) && localStrokes.length > 0) {
+                localStrokes.forEach(str => {
+                    try { drawPathFromData(JSON.parse(str)); } catch(e){}
+                });
             }
 
             const { data } = await supabaseClient.from('drawings').select('*').order('id', { ascending: true });
             if (data && data.length > 0) {
                 let allStrs = data.map(row => row.line_data);
-                localStorage.setItem("saved_canvas_lines", JSON.stringify(allStrs));
+                localStorage.setItem("saved_canvas_strokes", JSON.stringify(allStrs));
                 drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                allStrs.forEach(lineStr => drawLineFromString(lineStr));
+                allStrs.forEach(str => {
+                    try { drawPathFromData(JSON.parse(str)); } catch(e){}
+                });
             }
         }
 
@@ -944,25 +945,25 @@
             channel
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
                     if (payload.new && payload.new.line_data) {
-                        let lineStr = payload.new.line_data;
-                        let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
-                        if (!localLines.includes(lineStr)) {
-                            localLines.push(lineStr);
-                            localStorage.setItem("saved_canvas_lines", JSON.stringify(localLines));
+                        let strokeStr = payload.new.line_data;
+                        let localStrokes = JSON.parse(localStorage.getItem("saved_canvas_strokes") || "[]");
+                        if (!localStrokes.includes(strokeStr)) {
+                            localStrokes.push(strokeStr);
+                            localStorage.setItem("saved_canvas_strokes", JSON.stringify(localStrokes));
                         }
-                        drawLineFromString(lineStr);
+                        try { drawPathFromData(JSON.parse(strokeStr)); } catch(e){}
                     }
                 })
                 .on('broadcast', { event: 'clear_canvas' }, () => {
                     drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                    localStorage.removeItem("saved_canvas_lines");
+                    localStorage.removeItem("saved_canvas_strokes");
                 })
                 .subscribe();
         }
 
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-            localStorage.removeItem("saved_canvas_lines");
+            localStorage.removeItem("saved_canvas_strokes");
             try {
                 await supabaseClient.channel('public:drawings').send({
                     type: 'broadcast',
@@ -989,16 +990,15 @@
             };
         }
 
-        drawCanvas.addEventListener("mousedown", (e) => {
+        function startDrawing(pos) {
             isDrawing = true;
-            const pos = getMousePos(e);
             lastX = pos.x;
             lastY = pos.y;
-        });
+            currentStrokePoints = [{x: lastX, y: lastY}];
+        }
 
-        drawCanvas.addEventListener("mousemove", (e) => {
+        function moveDrawing(pos) {
             if (!isDrawing) return;
-            const pos = getMousePos(e);
             
             drawCtx.save();
             drawCtx.strokeStyle = brushColor;
@@ -1008,45 +1008,48 @@
             drawCtx.stroke();
             drawCtx.restore();
 
-            sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
-            
+            currentStrokePoints.push({x: pos.x, y: pos.y});
             lastX = pos.x;
             lastY = pos.y;
+        }
+
+        function stopDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if (currentStrokePoints.length > 0) {
+                const strokeObj = {
+                    color: brushColor,
+                    points: currentStrokePoints
+                };
+                saveStrokeToSupabase(strokeObj);
+                currentStrokePoints = [];
+            }
+        }
+
+        drawCanvas.addEventListener("mousedown", (e) => {
+            startDrawing(getMousePos(e));
+        });
+
+        drawCanvas.addEventListener("mousemove", (e) => {
+            moveDrawing(getMousePos(e));
         });
 
         window.addEventListener("mouseup", () => {
-            isDrawing = false;
+            stopDrawing();
         });
 
         drawCanvas.addEventListener("touchstart", (e) => {
-            isDrawing = true;
-            const pos = getTouchPos(e);
-            lastX = pos.x;
-            lastY = pos.y;
+            startDrawing(getTouchPos(e));
             e.preventDefault();
         }, { passive: false });
 
         drawCanvas.addEventListener("touchmove", (e) => {
-            if (!isDrawing) return;
-            const pos = getTouchPos(e);
-            
-            drawCtx.save();
-            drawCtx.strokeStyle = brushColor;
-            drawCtx.beginPath();
-            drawCtx.moveTo(lastX, lastY);
-            drawCtx.lineTo(pos.x, pos.y);
-            drawCtx.stroke();
-            drawCtx.restore();
-
-            sendSegmentToSupabase(lastX, lastY, pos.x, pos.y, brushColor);
-            
-            lastX = pos.x;
-            lastY = pos.y;
+            moveDrawing(getTouchPos(e));
             e.preventDefault();
         }, { passive: false });
 
         window.addEventListener("touchend", () => {
-            isDrawing = false;
+            stopDrawing();
         });
         // ============================================================
 
