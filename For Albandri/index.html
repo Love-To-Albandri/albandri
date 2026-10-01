@@ -421,7 +421,6 @@
             <source src="oursong.mp3" type="audio/mpeg">
         </audio>
 
-        <!-- قائمة الأغاني مع إضافة الأغنية الجديدة song5 وتعديل جميع الأسماء لتتضمن القلوب -->
         <div id="musicMenu" style="position: fixed; bottom: 80px; right: 20px; background: #351923; border: 1px solid #d9a6b6; border-radius: 15px; padding: 12px; display: none; z-index: 101; flex-direction: column; gap: 8px;">
             <button onclick="playChosenSong('oursong.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">From FAISAL ♡</button>
             <button onclick="playChosenSong('song2.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">A great deal of longing ♡</button>
@@ -876,6 +875,7 @@
             e.preventDefault();
         }, { passive: false });
 
+        // ==================== تعديل قسم الرسم بدقة ====================
         const drawCanvas = document.getElementById("drawingCanvas");
         const drawCtx = drawCanvas.getContext("2d");
         let isDrawing = false;
@@ -1045,9 +1045,10 @@
             e.preventDefault();
         }, { passive: false });
 
-        window.touchend = () => {
+        window.addEventListener("touchend", () => {
             isDrawing = false;
-        };
+        });
+        // ============================================================
 
         function updateCounter() {
             const startDate = new Date("2023-12-01T02:30:00");
