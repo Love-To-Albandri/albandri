@@ -421,10 +421,12 @@
             <source src="oursong.mp3" type="audio/mpeg">
         </audio>
 
-        <!-- قائمة اختيار الأغاني (تظهر عند الضغط على زر الموسيقى) -->
-        <div id="musicMenu" style="position: fixed; bottom: 80px; right: 20px; background: #351923; border: 1px solid #d9a6b6; border-radius: 15px; padding: 10px; display: none; z-index: 101; flex-direction: column; gap: 8px;">
-            <button onclick="playChosenSong('oursong.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 6px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 150px;">♫ الأغنية الأولى</button>
-            <button onclick="playChosenSong('song2.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 6px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 150px;">♫ الأغنية الثانية</button>
+        <!-- قائمة الأغاني بالأسماء الجديدة والقلوب -->
+        <div id="musicMenu" style="position: fixed; bottom: 80px; right: 20px; background: #351923; border: 1px solid #d9a6b6; border-radius: 15px; padding: 12px; display: none; z-index: 101; flex-direction: column; gap: 8px;">
+            <button onclick="playChosenSong('oursong.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">From FAISAL ♡</button>
+            <button onclick="playChosenSong('song2.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">A great deal of longing</button>
+            <button onclick="playChosenSong('song3.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">Our New Year's song ♡</button>
+            <button onclick="playChosenSong('song4.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">From Albandari ♡</button>
         </div>
 
         <section class="home">
@@ -584,13 +586,11 @@
             document.getElementById("story").scrollIntoView({ behavior: "smooth" });
         }
 
-        // دالة إظهار وإخفاء قائمة الأغاني
         function toggleMusicMenu() {
             const menu = document.getElementById("musicMenu");
             menu.style.display = menu.style.display === "flex" ? "none" : "flex";
         }
 
-        // دالة تشغيل الأغنية المختارة وإغلاق القائمة
         function playChosenSong(songFileName) {
             const song = document.getElementById("ourSong");
             song.src = songFileName;
