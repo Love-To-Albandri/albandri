@@ -163,7 +163,7 @@
         .drawing-section { background: linear-gradient(#1f0d14, #160b10); }
         .message-section { background: #14090f; min-height: 70vh; }
         .chat-section { background: linear-gradient(#14090f, #10070b); min-height: 100vh; }
-        .counter-section { background: #10070b; min-height: 70vh; position: relative; }
+        .counter-section { background: #10070b; min-height: 70vh; }
 
         .thought-card, .confession-card, .comfort-card, .game-card, .drawing-card, .message-card, .chat-card {
             max-width: 800px;
@@ -421,6 +421,7 @@
             <source src="oursong.mp3" type="audio/mpeg">
         </audio>
 
+        <!-- قائمة الأغاني مع إضافة الأغنية الجديدة song5 وتعديل جميع الأسماء لتتضمن القلوب -->
         <div id="musicMenu" style="position: fixed; bottom: 80px; right: 20px; background: #351923; border: 1px solid #d9a6b6; border-radius: 15px; padding: 12px; display: none; z-index: 101; flex-direction: column; gap: 8px;">
             <button onclick="playChosenSong('oursong.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">From FAISAL ♡</button>
             <button onclick="playChosenSong('song2.mp3')" style="background: transparent; border: 1px solid #8c4a5f; color: white; padding: 7px 15px; border-radius: 10px; font-size: 13px; cursor: pointer; width: 230px; text-align: center;">A great deal of longing ♡</button>
@@ -493,7 +494,7 @@
         <section class="drawing-section">
             <div class="drawing-card">
                 <h2 style="font-size: 26px; color: #f5d0dc; margin-bottom: 10px;">Our Shared Canvas ♡</h2>
-                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on the screen live and stays saved! ♡</p>
+                <p class="small" style="margin-bottom: 15px;">Whatever you draw appears on the screen live! ♡</p>
                 
                 <canvas id="drawingCanvas" width="800" height="520"></canvas>
                 
@@ -550,14 +551,14 @@
 
     <script>
         const SUPABASE_URL = "https://ymnuakhkbvdicbjfrzco.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltbnVha2hrYnZkaWNiamZyemNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3aosxMjkyMjcsImV4cCI6MjEwNjMwNTIyN30.mjL8dNQ8KNPDbCLvXnmpHq-nn11ziiEcOAFzW6-DYkc";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltbnVha2hrYnZkaWNiamZyemNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MjkyMjcsImV4cCI6MjEwNjMwNTIyN30.mjL8dNQ8KNPDbCLvXnmpHq-nn11ziiEcOAFzW6-DYkc";
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const SECRET_PIN = "2023"; 
 
         let myDeviceUUID = localStorage.getItem("my_device_uuid");
         if (!myDeviceUUID) {
-            myDeviceUUID = 'device_' + Math.random().toString(36).substring(2, 9);
+            myDeviceUUID = 'device_user_1';
             localStorage.setItem("my_device_uuid", myDeviceUUID);
         }
 
@@ -914,36 +915,60 @@
 
         async function sendSegmentToSupabase(x0, y0, x1, y1, color) {
             const dataStr = `${x0},${y0},${x1},${y1},${color}`;
+            let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
+            if (!Array.isArray(localLines)) localLines = [];
+            localLines.push(dataStr);
+            localStorage.setItem("saved_canvas_lines", JSON.stringify(localLines));
+
             await supabaseClient.from('drawings').insert([{ line_data: dataStr }]);
         }
 
         async function loadSavedDrawingLines() {
-            const { data, error } = await supabaseClient.from('drawings').select('*').order('id', { ascending: true });
+            let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
+            if (Array.isArray(localLines) && localLines.length > 0) {
+                localLines.forEach(lineStr => drawLineFromString(lineStr));
+            }
+
+            const { data } = await supabaseClient.from('drawings').select('*').order('id', { ascending: true });
             if (data && data.length > 0) {
+                let allStrs = data.map(row => row.line_data);
+                localStorage.setItem("saved_canvas_lines", JSON.stringify(allStrs));
                 drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-                data.forEach(row => {
-                    drawLineFromString(row.line_data);
-                });
+                allStrs.forEach(lineStr => drawLineFromString(lineStr));
             }
         }
 
         function subscribeToDrawing() {
-            supabaseClient
-                .channel('public:drawings')
+            const channel = supabaseClient.channel('public:drawings');
+
+            channel
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drawings' }, payload => {
                     if (payload.new && payload.new.line_data) {
-                        drawLineFromString(payload.new.line_data);
+                        let lineStr = payload.new.line_data;
+                        let localLines = JSON.parse(localStorage.getItem("saved_canvas_lines") || "[]");
+                        if (!localLines.includes(lineStr)) {
+                            localLines.push(lineStr);
+                            localStorage.setItem("saved_canvas_lines", JSON.stringify(localLines));
+                        }
+                        drawLineFromString(lineStr);
                     }
                 })
-                .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'drawings' }, () => {
+                .on('broadcast', { event: 'clear_canvas' }, () => {
                     drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                    localStorage.removeItem("saved_canvas_lines");
                 })
                 .subscribe();
         }
 
         async function clearCanvasAction() {
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            localStorage.removeItem("saved_canvas_lines");
             try {
+                await supabaseClient.channel('public:drawings').send({
+                    type: 'broadcast',
+                    event: 'clear_canvas',
+                    payload: {}
+                });
                 await supabaseClient.from('drawings').delete().neq('id', 0);
             } catch (err) {}
         }
@@ -952,7 +977,7 @@
             const rect = drawCanvas.getBoundingClientRect();
             return {
                 x: (e.clientX - rect.left) * (drawCanvas.width / rect.width),
-                y: (e.clientY - rect.top) * (drawCanvas.height / drawCanvas.height)
+                y: (e.clientY - rect.top) * (drawCanvas.height / rect.height)
             };
         }
 
@@ -960,7 +985,7 @@
             const rect = drawCanvas.getBoundingClientRect();
             return {
                 x: (e.touches[0].clientX - rect.left) * (drawCanvas.width / rect.width),
-                y: (e.touches[0].clientY - rect.top) * (drawCanvas.height / drawCanvas.height)
+                y: (e.touches[0].clientY - rect.top) * (drawCanvas.height / rect.height)
             };
         }
 
