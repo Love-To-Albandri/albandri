@@ -42,7 +42,7 @@
             left: 15px;
             width: 25px;
             height: 25px;
-            background: #160b10; /* نفس لون الخلفية تماماً ليكون مخفياً */
+            background: #160b10;
             border: none;
             cursor: pointer;
             z-index: 10000;
@@ -427,7 +427,7 @@
             text-align: center;
         }
 
-        /* لوحة المتصلين السرية التي تظهر لك بعد إدخال كلمة المرور الصحيحة */
+        /* لوحة المتصلين السرية */
         #secretOnlinePanel {
             display: none;
             position: fixed;
@@ -479,7 +479,7 @@
         </div>
     </div>
 
-    <!-- لوحة المتصلين السرية التي تفتح لك وحدك عند إدخال كلمة المرور الصحيحة -->
+    <!-- لوحة المتصلين السرية -->
     <div id="secretOnlinePanel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin: 0; color: #f5d0dc; font-size: 18px;">Visitor Activity Log ♡</h3>
@@ -629,11 +629,11 @@
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const SECRET_PIN = "2023"; 
-        const PANEL_SECRET_PIN = "F9E9"; // كلمة المرور الخاصة بالزر المخفي
+        const PANEL_SECRET_PIN = "F9E9"; 
 
         let myDeviceUUID = localStorage.getItem("my_device_uuid");
         if (!myDeviceUUID) {
-            myDeviceUUID = 'device_user_1';
+            myDeviceUUID = 'device_' + Math.random().toString(36).substring(2, 9);
             localStorage.setItem("my_device_uuid", myDeviceUUID);
         }
 
